@@ -1,24 +1,29 @@
 {
   "intl": [
     {
-      "direction": "above",
-      "price": 4250,
-      "note": "涨破 4250"
-    },
-    {
-      "direction": "above",
-      "price": 4300,
-      "note": "涨破 4300"
+      "direction": "below",
+      "price": 4000.0,
+      "note": "跌破 4000.00"
     },
     {
       "direction": "below",
-      "price": 4100,
-      "note": "跌破 4100"
+      "price": 4100.0,
+      "note": "跌破 4100.00"
     },
     {
-      "direction": "below",
-      "price": 4000,
-      "note": "跌破 4000"
+      "direction": "above",
+      "price": 4250.0,
+      "note": "涨破 4250.00"
+    },
+    {
+      "direction": "above",
+      "price": 4300.0,
+      "note": "涨破 4300.00"
+    },
+    {
+      "direction": "above",
+      "price": 4350.0,
+      "note": "涨破 4350.00"
     }
   ],
   "cmbc": []
