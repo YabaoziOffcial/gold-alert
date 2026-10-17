@@ -2,19 +2,12 @@ name: gold-alert
 
 on:
   schedule:
-    # 交易日每 10 分钟检查一次（价格预警用），北京时间 09:00–23:50
-    - cron: '*/10 1-15 * * 1-5'
-    # 定时播报
-    - cron: '0 1 * * 1-5'      # 09:00
-    - cron: '30 3 * * 1-5'     # 11:30
-    - cron: '0 7 * * 1-5'      # 15:00
-    - cron: '0 12 * * 1-5'     # 20:00
-    # 周末只在 09:30 播报一次
-    - cron: '30 1 * * 0,6'
+    # 每 10 分钟触发；实际是否检查由 alerts.json 里的时间段与间隔决定
+    - cron: '*/10 * * * *'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: gold-alert
@@ -27,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: 恢复预警状态
+      - name: 恢复状态
         uses: actions/cache@v4
         with:
           path: state
