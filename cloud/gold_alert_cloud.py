@@ -1,34 +1,27 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""黄金云端播报 + 价格预警
+"""黄金云端播报 + 价格预警 + 历史记录
 
-功能
-  1. 定时播报：工作日 09:00 / 11:30 / 15:00 / 20:00；周末只在 09:30 播一次（带 😴）
-  2. 价格预警：国际金价 / 民生积存金 穿越设定阈值时立即推送（涨破、跌破两种方向）
-     高频 cron 每 10 分钟跑一次，非播报时段只在触发预警时才推送。
-
-阈值配置：仓库根目录 alerts.json
+配置文件：仓库根目录 alerts.json
   {
-    "intl": [
-      {"direction": "above", "price": 4200.0, "note": "涨破 4200"},
-      {"direction": "below", "price": 4100.0, "note": "跌破 4100"}
-    ],
-    "cmbc": []
+    "intl": [{"direction":"above","price":4250},{"direction":"below","price":4100}],
+    "cmbc": [{"direction":"above","price":900}],
+    "config": {"window_start":"09:00","window_end":"23:50","interval_minutes":10}
   }
-  direction: above = 涨破，below = 跌破
 
-状态（用于判断是否真的"穿越"，并避免重复播报）：state/state.json
-  由 GitHub Actions 的 cache 在新旧两次运行之间传递。
+行为
+  - 只在 config 指定的时间段内检查（默认 09:00–23:50 北京时间）
+  - 按 interval_minutes 控制检查频率（cron 每 10 分钟触发一次，脚本自己节流）
+  - 定时播报：09:00 / 11:30 / 15:00 / 20:00；周末只 09:30 播一次（带 😴）
+  - 价格穿越阈值时立即推送（涨破 / 跌破，国际金价 + 民生积存金都支持）
+  - 每次检查把国际金价追加到 docs/history.json，整点提交（每小时 1 个 commit）
 
-环境变量
-  NTFY_TOPIC     必填
-  NTFY_SERVER    默认 https://ntfy.sh
-  NTFY_PRIORITY  默认 4
-  FORCE          1 = 强制播报（手动触发时自动生效）
+环境变量：NTFY_TOPIC / NTFY_SERVER / NTFY_PRIORITY / FORCE
 """
 import json
 import os
 import ssl
+import subprocess
 import sys
 import time
 import urllib.request
@@ -39,6 +32,7 @@ BASE = Path(__file__).resolve().parent
 ROOT = BASE.parent
 STATE_FILE = ROOT / "state" / "state.json"
 ALERT_FILE = ROOT / "alerts.json"
+HISTORY_FILE = ROOT / "docs" / "history.json"
 
 TZ_CN = timezone(timedelta(hours=8))
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -47,14 +41,17 @@ SSL_CTX = ssl.create_default_context()
 SSL_CTX.check_hostname = False
 SSL_CTX.verify_mode = ssl.CERT_NONE
 
+DEFAULT_CONFIG = {"window_start": "09:00", "window_end": "23:50", "interval_minutes": 10}
 DIGEST_SLOTS = ["09:00", "11:30", "15:00", "20:00"]
 DIGEST_WINDOW_MIN = 12
+DIGEST_MIN_GAP_MIN = 45
 WEEKEND_WINDOW = (9 * 60 + 15, 10 * 60 + 30)
-DIGEST_MIN_GAP_MIN = 45          # 防止同一时段被高频 cron 重复触发
+HISTORY_KEEP_DAYS = 7
+HISTORY_POINT_SECONDS = 10 * 60
 
 
 # --------------------------------------------------------------------------- #
-# 网络
+# 工具
 # --------------------------------------------------------------------------- #
 def http_get(url, headers=None, timeout=20, retries=3):
     hdrs = {"User-Agent": UA}
@@ -82,8 +79,32 @@ def http_post_json(url, payload, timeout=20):
         return r.read(1000).decode("utf-8", "ignore")
 
 
+def load_json(path, default):
+    if path.exists():
+        try:
+            return json.loads(path.read_text(encoding="utf-8-sig"))
+        except Exception:                 # noqa: BLE001
+            pass
+    return default
+
+
+def save_json(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def hhmm_minutes(text, fallback):
+    try:
+        h, m = str(text).split(":")
+        return int(h) * 60 + int(m)
+    except Exception:                     # noqa: BLE001
+        return hhmm_minutes(fallback, "00:00")
+
+
+# --------------------------------------------------------------------------- #
+# 行情
+# --------------------------------------------------------------------------- #
 def fetch_intl():
-    """国际现货黄金 XAU/USD"""
     try:
         raw = http_get("https://hq.sinajs.cn/rn=%d&list=hf_XAU" % int(time.time() * 1000),
                        headers={"Referer": "https://finance.sina.com.cn"})
@@ -94,18 +115,15 @@ def fetch_intl():
             return {"price": price,
                     "pre_close": float(p[7]) if p[7] else None,
                     "high": float(p[4]) if p[4] else None,
-                    "low": float(p[5]) if p[5] else None,
-                    "ts": (p[12] + " " + p[6]) if len(p) > 12 and p[12] else ""}
+                    "low": float(p[5]) if p[5] else None}
     except Exception as exc:              # noqa: BLE001
         print("新浪源失败: %s" % exc, file=sys.stderr)
 
     data = json.loads(http_get("https://api.gold-api.com/price/XAU").decode("utf-8", "ignore"))
-    return {"price": float(data["price"]), "pre_close": None,
-            "high": None, "low": None, "ts": data.get("updatedAt", "")}
+    return {"price": float(data["price"]), "pre_close": None, "high": None, "low": None}
 
 
 def fetch_cmbc():
-    """民生银行积存金"""
     raw = http_get(
         "https://api.jdjygold.com/gw2/generic/produTools/h5/m/getGoldPrice?goldCode=CMBC-JCJ",
         headers={"Referer": "https://gold-price-pro.pf.jd.com/",
@@ -118,40 +136,7 @@ def fetch_cmbc():
 
 
 # --------------------------------------------------------------------------- #
-# 状态与配置
-# --------------------------------------------------------------------------- #
-def load_json(path, default):
-    if path.exists():
-        try:
-            return json.loads(path.read_text(encoding="utf-8-sig"))
-        except Exception:                 # noqa: BLE001
-            pass
-    return default
-
-
-def save_state(state):
-    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
-
-
-def load_alerts():
-    data = load_json(ALERT_FILE, {})
-    out = {"intl": [], "cmbc": []}
-    for market in out:
-        for item in data.get(market) or []:
-            try:
-                direction = str(item.get("direction", "")).lower()
-                price = float(item["price"])
-            except (KeyError, TypeError, ValueError):
-                continue
-            if direction in ("above", "below") and price > 0:
-                out[market].append({"direction": direction, "price": price,
-                                    "note": item.get("note") or ""})
-    return out
-
-
-# --------------------------------------------------------------------------- #
-# 判断
+# 预警与播报判断
 # --------------------------------------------------------------------------- #
 def arrow_pct(value):
     if value is None:
@@ -170,7 +155,6 @@ def pct(cur, base):
 
 
 def detect_crossings(alerts, last_price, current_price):
-    """返回本次跨越的阈值列表；last_price 为 None 时只建立基线不触发"""
     fired = []
     if last_price is None or current_price is None:
         return fired
@@ -181,6 +165,30 @@ def detect_crossings(alerts, last_price, current_price):
         elif item["direction"] == "below" and last_price > t >= current_price:
             fired.append(item)
     return fired
+
+
+def parse_alerts(raw):
+    out = {}
+    for market in ("intl", "cmbc"):
+        items = []
+        for item in raw.get(market) or []:
+            try:
+                direction = str(item.get("direction", "")).lower()
+                price = float(item["price"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if direction in ("above", "below") and price > 0:
+                items.append({"direction": direction, "price": price})
+        out[market] = items
+    out["config"] = dict(DEFAULT_CONFIG)
+    for k, v in (raw.get("config") or {}).items():
+        if k in DEFAULT_CONFIG:
+            out["config"][k] = v
+    try:
+        out["config"]["interval_minutes"] = max(5, int(out["config"]["interval_minutes"]))
+    except (TypeError, ValueError):
+        out["config"]["interval_minutes"] = 10
+    return out
 
 
 def digest_due(now, state, forced):
@@ -207,21 +215,43 @@ def digest_due(now, state, forced):
     return False, ""
 
 
-def build_alert_lines(fired, markets):
-    lines = []
-    for market, item in fired:
-        data = markets.get(market)
-        if not data:
-            continue
-        if market == "intl":
-            name, unit = "国际金价", "美元/盎司"
-        else:
-            name, unit = "民生积存金", "元/克"
-        verb = "涨破" if item["direction"] == "above" else "跌破"
-        lines.append("⚡ %s%s %s %s（现价 %s）"
-                     % (name, verb, format(item["price"], ",.2f"), unit,
-                        format(data["price"], ",.2f")))
-    return lines
+# --------------------------------------------------------------------------- #
+# 历史记录
+# --------------------------------------------------------------------------- #
+def record_history(price, now, commit):
+    data = load_json(HISTORY_FILE, {})
+    points = data.get("points") or []
+    cutoff = int(now.timestamp()) - HISTORY_KEEP_DAYS * 86400
+    points = [p for p in points if isinstance(p, list) and len(p) == 2 and p[0] >= cutoff]
+    ts = int(now.timestamp() // HISTORY_POINT_SECONDS * HISTORY_POINT_SECONDS)
+    if points and points[-1][0] == ts:
+        points[-1][1] = round(price, 2)
+    else:
+        points.append([ts, round(price, 2)])
+    data = {"updated": now.strftime("%Y-%m-%d %H:%M:%S"), "points": points}
+    save_json(HISTORY_FILE, data)
+    if commit:
+        try:
+            git_commit_history(now)
+        except Exception as exc:          # noqa: BLE001
+            print("历史提交失败: %s" % exc, file=sys.stderr)
+
+
+def git_commit_history(now):
+    def run(args):
+        return subprocess.run(["git"] + args, cwd=str(ROOT), capture_output=True, text=True)
+    run(["config", "user.name", "gold-alert-bot"])
+    run(["config", "user.email", "gold-alert-bot@users.noreply.github.com"])
+    run(["add", "docs/history.json"])
+    if run(["diff", "--cached", "--quiet"]).returncode == 0:
+        return
+    run(["commit", "-m", "data: gold history %s" % now.strftime("%Y-%m-%d %H:%M")])
+    for attempt in range(2):
+        push = run(["push", "origin", "HEAD:main"])
+        if push.returncode == 0:
+            return
+        run(["pull", "--rebase", "--autostash", "origin", "main"])
+    raise RuntimeError((push.stderr or push.stdout).strip()[:300])
 
 
 # --------------------------------------------------------------------------- #
@@ -246,12 +276,36 @@ def main():
               or os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch")
     is_weekend = now.weekday() >= 5
 
+    raw_alerts = load_json(ALERT_FILE, {})
+    alerts = parse_alerts(raw_alerts)
+    cfg = alerts["config"]
     state = load_json(STATE_FILE, {})
-    alerts = load_alerts()
-    print("上次基线: intl=%s cmbc=%s last_digest=%s"
-          % (state.get("intl_last"), state.get("cmbc_last"), state.get("last_digest")))
 
-    # ---------- 抓价 ----------
+    # 时间段判断
+    start = hhmm_minutes(cfg.get("window_start"), "09:00")
+    end = hhmm_minutes(cfg.get("window_end"), "23:50")
+    minutes = now.hour * 60 + now.minute
+    in_window = start <= minutes <= end if start <= end else (minutes >= start or minutes <= end)
+    if not in_window and not forced:
+        print("不在提醒时间段 %s-%s 内，跳过（%s）"
+              % (cfg.get("window_start"), cfg.get("window_end"), now.strftime("%H:%M")))
+        return 0
+
+    # 频率节流（定时播报不受影响）
+    digest_ok, digest_reason = digest_due(now, state, forced)
+    last_check = state.get("last_check")
+    due = forced or not last_check
+    if not due:
+        try:
+            last_dt = datetime.strptime(last_check, "%Y-%m-%d %H:%M:%S").replace(tzinfo=TZ_CN)
+            due = (now - last_dt).total_seconds() >= int(cfg["interval_minutes"]) * 60
+        except ValueError:
+            due = True
+    if not due and not digest_ok:
+        print("距上次检查不足 %s 分钟，跳过（%s）" % (cfg["interval_minutes"], now.strftime("%H:%M")))
+        return 0
+
+    # 抓价
     markets = {}
     errors = []
     try:
@@ -262,12 +316,11 @@ def main():
         markets["cmbc"] = fetch_cmbc()
     except Exception as exc:              # noqa: BLE001
         errors.append("民生积存金: %s" % exc)
-
     if not markets:
         print("两个数据源都失败: " + "; ".join(errors), file=sys.stderr)
         return 3
 
-    # ---------- 预警 ----------
+    # 预警
     fired = []
     for market in ("intl", "cmbc"):
         cur = markets.get(market, {}).get("price")
@@ -275,70 +328,71 @@ def main():
         for item in detect_crossings(alerts.get(market) or [], last, cur):
             fired.append((market, item))
 
-    # ---------- 播报内容 ----------
-    price_lines = []
-    parts = []
-    intl = markets.get("intl")
-    cmbc = markets.get("cmbc")
-    if intl:
+    # 播报内容
+    price_lines, parts = [], []
+    if markets.get("intl"):
+        i = markets["intl"]
         price_lines.append("国际  %s 美元/盎司  %s"
-                           % (format(intl["price"], ",.2f"),
-                              arrow_pct(pct(intl["price"], intl.get("pre_close")))))
-        parts.append("国际 %s %s" % (format(intl["price"], ",.2f"),
-                                     arrow_pct(pct(intl["price"], intl.get("pre_close")))))
+                           % (format(i["price"], ",.2f"), arrow_pct(pct(i["price"], i.get("pre_close")))))
+        parts.append("国际 %s %s" % (format(i["price"], ",.2f"),
+                                     arrow_pct(pct(i["price"], i.get("pre_close")))))
     else:
         price_lines.append("国际  ⚠️ 获取失败")
-    if cmbc:
+    if markets.get("cmbc"):
+        c = markets["cmbc"]
         price_lines.append("民生  %s 元/克  %s"
-                           % (format(cmbc["price"], ",.2f"),
-                              arrow_pct(pct(cmbc["price"], cmbc.get("pre_close")))))
-        parts.append("民生 %s %s" % (format(cmbc["price"], ",.2f"),
-                                     arrow_pct(pct(cmbc["price"], cmbc.get("pre_close")))))
+                           % (format(c["price"], ",.2f"), arrow_pct(pct(c["price"], c.get("pre_close")))))
+        parts.append("民生 %s %s" % (format(c["price"], ",.2f"),
+                                     arrow_pct(pct(c["price"], c.get("pre_close")))))
     else:
         price_lines.append("民生  ⚠️ 获取失败")
 
-    digest_ok, digest_reason = digest_due(now, state, forced)
-    should_send = digest_ok or bool(fired)
-    if not should_send:
-        print("无预警触发，且不在播报时段，跳过（%s）" % now.strftime("%H:%M"))
-        # 仍然更新基线，保证下次能判断"穿越"
-        state["intl_last"] = markets.get("intl", {}).get("price")
-        state["cmbc_last"] = markets.get("cmbc", {}).get("price")
-        state["updated"] = now.strftime("%Y-%m-%d %H:%M:%S")
-        save_state(state)
-        return 0
+    should_push = bool(fired) or digest_ok
+    history_commit = forced or now.minute < 10
+    if markets.get("intl"):
+        record_history(markets["intl"]["price"], now, history_commit)
 
-    # ---------- 组装消息 ----------
-    if fired:
-        title = "⚡ 金价预警 · " + " · ".join(parts)
-        body_lines = build_alert_lines(fired, markets) + [""] + price_lines
+    if should_push:
+        if fired:
+            title = "⚡ 金价预警 · " + " · ".join(parts)
+            body = []
+            for market, item in fired:
+                data = markets.get(market)
+                if not data:
+                    continue
+                name = "国际金价" if market == "intl" else "民生积存金"
+                unit = "美元/盎司" if market == "intl" else "元/克"
+                verb = "涨破" if item["direction"] == "above" else "跌破"
+                body.append("⚡ %s%s %s %s（现价 %s）"
+                            % (name, verb, format(item["price"], ",.2f"), unit,
+                               format(data["price"], ",.2f")))
+            body.append("")
+            body.extend(price_lines)
+        else:
+            title = "黄金速报 %s · %s" % (now.strftime("%H:%M"), " · ".join(parts))
+            body = list(price_lines)
+        if is_weekend and (digest_reason.startswith("周末") or forced):
+            body.append("周末休息😴")
+        if errors:
+            body.append("｜".join(errors))
+        message = "\n".join(body)
+        resp = http_post_json(server + "/", {
+            "topic": topic, "title": title, "message": message,
+            "priority": 5 if fired else priority,
+            "tags": ["rotating_light"] if fired else ["moneybag"]})
+        print("已推送(%s): %s" % (digest_reason if digest_ok and not fired else "价格预警",
+                                  message.replace("\n", " / ")))
+        print("服务端返回: " + resp[:300])
     else:
-        title = "黄金速报 %s · %s" % (now.strftime("%H:%M"), " · ".join(parts))
-        body_lines = price_lines
+        print("无预警，且不在播报时段（%s）" % now.strftime("%H:%M"))
 
-    if self_is_weekend := is_weekend:
-        if digest_reason.startswith("周末") or forced:
-            body_lines.append("周末休息😴")
-    if errors:
-        body_lines.append("｜".join(errors))
-
-    message = "\n".join(body_lines)
-
-    resp = http_post_json(server + "/", {
-        "topic": topic, "title": title, "message": message,
-        "priority": 5 if fired else priority,
-        "tags": ["rotating_light"] if fired else ["moneybag"]})
-    print("已推送(%s): %s" % (digest_reason if digest_ok else "价格预警",
-                              message.replace("\n", " / ")))
-    print("服务端返回: " + resp[:300])
-
-    # ---------- 更新状态 ----------
+    # 状态更新
     state["intl_last"] = markets.get("intl", {}).get("price")
     state["cmbc_last"] = markets.get("cmbc", {}).get("price")
+    state["last_check"] = now.strftime("%Y-%m-%d %H:%M:%S")
     if digest_ok and not fired:
         state["last_digest"] = now.strftime("%Y-%m-%d %H:%M:%S")
-    state["updated"] = now.strftime("%Y-%m-%d %H:%M:%S")
-    save_state(state)
+    save_json(STATE_FILE, state)
     return 0
 
 
