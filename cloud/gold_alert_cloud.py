@@ -248,6 +248,8 @@ def main():
 
     state = load_json(STATE_FILE, {})
     alerts = load_alerts()
+    print("上次基线: intl=%s cmbc=%s last_digest=%s"
+          % (state.get("intl_last"), state.get("cmbc_last"), state.get("last_digest")))
 
     # ---------- 抓价 ----------
     markets = {}
