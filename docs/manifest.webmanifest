@@ -1,0 +1,19 @@
+{
+  "name": "金价预警",
+  "short_name": "金价预警",
+  "description": "快速设置国际金价涨破/跌破提醒阈值",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0A0C",
+  "theme_color": "#0A0A0C",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
