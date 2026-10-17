@@ -93,8 +93,8 @@
   .grow{flex:1;min-width:0}
   .delta{font-size:12px;color:var(--muted);margin-top:2px}
   .delta.warn{color:var(--gold)}
-  .del{width:36px;height:36px;border-radius:10px;border:1px solid transparent;background:transparent;
-    color:var(--faint);display:grid;place-items:center;transition:.18s var(--ease)}
+  .del{width:40px;height:40px;border-radius:12px;border:1px solid transparent;background:transparent;
+    color:#8F8A82;display:grid;place-items:center;transition:.18s var(--ease)}
   .del:active{background:rgba(255,93,93,.12);color:var(--rise)}
   .del svg{width:17px;height:17px}
   .empty{border:1px dashed rgba(255,255,255,.12);border-radius:var(--r-md);
@@ -120,7 +120,8 @@
     display:flex;align-items:center;justify-content:center;gap:8px;
     transition:transform .12s var(--ease),opacity .2s,filter .2s}
   .save:active{transform:scale(.985)}
-  .save[disabled]{opacity:.38;filter:saturate(.4);box-shadow:none}
+  .save[disabled]{background:transparent;border:1px solid var(--line);color:var(--muted);
+    box-shadow:none;font-weight:500;font-size:14.5px}
   .save .spin{width:16px;height:16px;border:2px solid rgba(0,0,0,.25);border-top-color:#1A1408;
     border-radius:50%;animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
@@ -552,6 +553,7 @@
   window.__goldApp = { apply: applyAlerts, render: render, state: state };
   loadPrice();
   loadAlerts();
+  setInterval(loadPrice, 60000);
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("sw.js").catch(function () {});
   }
