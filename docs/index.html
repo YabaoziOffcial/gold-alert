@@ -21,12 +21,10 @@
     --shadow:0 12px 32px rgba(0,0,0,.45);
     --ease:cubic-bezier(.2,.7,.3,1);
   }
-  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
-    background:
-      radial-gradient(1200px 600px at 50% -10%, rgba(229,180,85,.10), transparent 60%),
-      var(--bg);
+    background:radial-gradient(1200px 600px at 50% -10%, rgba(229,180,85,.10), transparent 60%), var(--bg);
     color:var(--text);
     font:400 16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Segoe UI",Roboto,sans-serif;
     min-height:100vh;
@@ -36,8 +34,7 @@
   .wrap{max-width:460px;margin:0 auto}
   .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 
-  /* ---------- header ---------- */
-  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s3)}
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s2)}
   .brand{display:flex;align-items:center;gap:12px}
   .mark{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;
     background:linear-gradient(145deg,#F0C46A,#B8842F);box-shadow:0 6px 18px rgba(229,180,85,.25)}
@@ -50,32 +47,30 @@
   .icon-btn:active{transform:scale(.96);background:var(--surface-2)}
   .icon-btn svg{width:19px;height:19px}
 
-  /* ---------- hero ---------- */
-  .banner{margin:-8px 0 var(--s2);display:flex;align-items:center;gap:10px;
-    background:rgba(255,93,93,.10);border:1px solid rgba(255,93,93,.28);color:#FFC9C9;
-    border-radius:12px;padding:10px 12px;font-size:12.5px}
-  .banner[hidden]{display:none}
-  .banner span{flex:1}
-  .banner button{background:transparent;border:1px solid rgba(255,255,255,.18);color:#FFD7D7;
-    border-radius:8px;padding:5px 10px;font-size:12px}
-  .hero{background:linear-gradient(160deg,#1B1A18,#121116 60%);border:1px solid var(--line);
-    border-radius:var(--r-xl);padding:var(--s3);box-shadow:var(--shadow);margin-bottom:var(--s3);
+  /* chart card */
+  .chart-card{background:linear-gradient(160deg,#1B1A18,#121116 60%);border:1px solid var(--line);
+    border-radius:var(--r-xl);padding:18px 18px 12px;box-shadow:var(--shadow);margin-bottom:var(--s2);
     position:relative;overflow:hidden}
-  .hero:after{content:"";position:absolute;inset:-40% -20% auto auto;width:200px;height:200px;
-    background:radial-gradient(circle,rgba(229,180,85,.18),transparent 70%);pointer-events:none}
-  .hero-label{font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:var(--faint);margin-bottom:var(--s1)}
-  .price-row{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
-  .price{font-size:44px;line-height:1.05;font-weight:640;letter-spacing:-1px}
-  .price small{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:2px}
-  .spark{font-size:14px;font-weight:600;padding:3px 9px;border-radius:999px;background:var(--gold-dim);color:var(--gold)}
-  .hero-meta{display:flex;justify-content:space-between;align-items:center;margin-top:var(--s2);
-    font-size:12.5px;color:var(--muted)}
-  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--fall);margin-right:6px;vertical-align:1px}
-  .dot.off{background:var(--faint)}
-  .cmbc{font-size:13.5px;color:var(--muted)}
-  .cmbc b{color:var(--text);font-weight:600}
+  .chart-card:before{content:"";position:absolute;inset:-60% -10% auto auto;width:220px;height:220px;
+    background:radial-gradient(circle,rgba(229,180,85,.14),transparent 70%);pointer-events:none}
+  .chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .label{font-size:12px;letter-spacing:.6px;color:var(--faint);text-transform:uppercase}
+  .price{font-size:40px;line-height:1.05;font-weight:640;letter-spacing:-1px;margin-top:6px}
+  .price small{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:2px}
+  .chip{font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px;
+    background:var(--gold-dim);color:var(--gold);white-space:nowrap;margin-top:4px}
+  .chip.neg{background:rgba(255,93,93,.12);color:var(--rise)}
+  .chip.pos{background:rgba(51,201,123,.12);color:var(--fall)}
+  .chart{display:block;width:100%;height:132px;margin-top:10px;overflow:visible}
+  .chart-foot{display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-top:2px}
 
-  /* ---------- section ---------- */
+  /* segmented */
+  .seg{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);
+    border-radius:14px;padding:4px;margin-bottom:var(--s3)}
+  .seg-btn{flex:1;height:38px;border:none;border-radius:10px;background:transparent;color:var(--muted);
+    font-size:14px;font-weight:500;transition:.2s var(--ease)}
+  .seg-btn.active{background:var(--surface-2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.35)}
+
   .section{margin-bottom:var(--s3)}
   .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px}
   .sec-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;letter-spacing:.3px}
@@ -89,7 +84,7 @@
     border-radius:var(--r-md);padding:14px var(--s2);transition:border-color .2s,transform .12s var(--ease)}
   .row:active{transform:scale(.995)}
   .row .val{font-size:20px;font-weight:600;letter-spacing:-.3px}
-  .row .unit{font-size:12px;color:var(--faint);margin-left:3px;font-weight:400;letter-spacing:0}
+  .row .unit{font-size:12px;color:var(--faint);margin-left:4px;font-weight:400;letter-spacing:0}
   .grow{flex:1;min-width:0}
   .delta{font-size:12px;color:var(--muted);margin-top:2px}
   .delta.warn{color:var(--gold)}
@@ -103,7 +98,7 @@
   .add{display:flex;gap:8px;margin-top:8px}
   .add input{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
     padding:13px var(--s2);color:var(--text);font-size:16px;font-variant-numeric:tabular-nums;
-    outline:none;transition:border-color .2s,background .2s}
+    outline:none;transition:border-color .2s,background .2s;min-height:50px}
   .add input::placeholder{color:#5E5A55}
   .add input:focus{border-color:rgba(229,180,85,.5);background:var(--surface-2)}
   .add button{width:52px;border-radius:var(--r-md);border:1px solid rgba(229,180,85,.35);
@@ -111,14 +106,21 @@
     transition:transform .12s var(--ease),background .2s}
   .add button:active{transform:scale(.95);background:rgba(229,180,85,.24)}
 
-  /* ---------- save bar ---------- */
+  /* recent alerts */
+  .recent-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+    padding:16px 16px 6px;margin-bottom:var(--s2)}
+  .recent-card .sec-head{padding:0;margin-bottom:8px}
+  .alert-item{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+  .alert-item:first-child{border-top:none}
+  .alert-time{color:var(--faint);font-size:12px;white-space:nowrap;padding-top:2px}
+  .alert-text{color:var(--text);line-height:1.45}
+
   .savebar{position:fixed;left:0;right:0;bottom:0;padding:12px var(--s2) calc(env(safe-area-inset-bottom) + 14px);
     background:linear-gradient(to top,rgba(10,10,12,.98) 40%,rgba(10,10,12,0));
     display:flex;justify-content:center;z-index:20}
   .save{max-width:460px;width:100%;height:52px;border:none;border-radius:16px;font-size:16px;font-weight:600;
     color:#1A1408;background:linear-gradient(135deg,#F2C972,#D9A23F);box-shadow:0 10px 26px rgba(229,180,85,.28);
-    display:flex;align-items:center;justify-content:center;gap:8px;
-    transition:transform .12s var(--ease),opacity .2s,filter .2s}
+    display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s var(--ease)}
   .save:active{transform:scale(.985)}
   .save[disabled]{background:transparent;border:1px solid var(--line);color:var(--muted);
     box-shadow:none;font-weight:500;font-size:14.5px}
@@ -126,7 +128,6 @@
     border-radius:50%;animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ---------- toast ---------- */
   .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translate(-50%,12px);
     background:#23232B;color:var(--text);border:1px solid var(--line);border-radius:12px;
     padding:10px 16px;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);
@@ -134,7 +135,6 @@
   .toast.show{opacity:1;transform:translate(-50%,0)}
   .toast.err{border-color:rgba(255,93,93,.4);color:#FFD7D7}
 
-  /* ---------- sheet ---------- */
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);
     opacity:0;pointer-events:none;transition:.25s;z-index:50}
   .scrim.show{opacity:1;pointer-events:auto}
@@ -144,18 +144,26 @@
   .sheet.show{transform:translateY(0)}
   .grab{width:38px;height:4px;border-radius:2px;background:#33333C;margin:6px auto 16px}
   .sheet h2{font-size:17px;margin:0 0 4px;font-weight:600}
-  .sheet p{font-size:12.5px;color:var(--muted);margin:0 0 16px;line-height:1.55}
+  .sheet p{font-size:12.5px;color:var(--muted);margin:0 0 14px;line-height:1.55}
   .field label{display:block;font-size:12px;color:var(--faint);margin:14px 0 6px;letter-spacing:.3px}
-  .field input{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;
-    padding:13px 14px;color:var(--text);font-size:14.5px;outline:none}
-  .field input:focus{border-color:rgba(229,180,85,.5)}
+  .field input,.field select{width:100%;background:var(--surface);border:1px solid var(--line);
+    border-radius:12px;padding:13px 14px;color:var(--text);font-size:14.5px;outline:none;min-height:48px;
+    appearance:none}
+  .field input:focus,.field select:focus{border-color:rgba(229,180,85,.5)}
+  .row2{display:flex;gap:10px}
+  .row2 > div{flex:1}
   .sheet-actions{display:flex;gap:10px;margin-top:20px}
   .sheet-actions button{flex:1;height:46px;border-radius:13px;border:1px solid var(--line);
     background:var(--surface);color:var(--text);font-size:15px;font-weight:500}
   .sheet-actions .primary{background:linear-gradient(135deg,#F2C972,#D9A23F);color:#1A1408;border:none;font-weight:600}
-  .hint{font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.5}
-  a{color:var(--gold)}
-
+  .hint{font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.55}
+  .banner{margin:0 0 var(--s2);display:flex;align-items:center;gap:10px;
+    background:rgba(255,93,93,.10);border:1px solid rgba(255,93,93,.28);color:#FFC9C9;
+    border-radius:12px;padding:10px 12px;font-size:12.5px}
+  .banner[hidden]{display:none}
+  .banner span{flex:1}
+  .banner button{background:transparent;border:1px solid rgba(255,255,255,.18);color:#FFD7D7;
+    border-radius:8px;padding:5px 10px;font-size:12px}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style>
 </head>
@@ -181,20 +189,29 @@
   </header>
 
   <div class="banner" id="banner" hidden>
-    <span id="bannerText">无法读取云端阈值</span>
+    <span id="bannerText">无法读取云端配置</span>
     <button id="btnRetry">重试</button>
   </div>
 
-  <div class="hero">
-    <div class="hero-label">国际金价 · XAU/USD</div>
-    <div class="price-row">
-      <div class="price num" id="price">—<small>/oz</small></div>
-      <div class="spark" id="change" hidden></div>
+  <section class="chart-card">
+    <div class="chart-head">
+      <div>
+        <div class="label">国际金价 · XAU/USD</div>
+        <div class="price num" id="price">—<small>/oz</small></div>
+      </div>
+      <div class="chip" id="chg" hidden></div>
     </div>
-    <div class="hero-meta">
-      <span><span class="dot" id="liveDot"></span><span id="priceMeta">获取中…</span></span>
-      <span class="cmbc" id="cmbcLine"></span>
+    <svg class="chart" id="chart" viewBox="0 0 320 120" preserveAspectRatio="none" aria-hidden="true"></svg>
+    <div class="chart-foot">
+      <span id="rangeLow">—</span>
+      <span id="chartHint">近 24 小时</span>
+      <span id="rangeHigh">—</span>
     </div>
+  </section>
+
+  <div class="seg" role="tablist">
+    <button class="seg-btn active" data-market="intl">国际金价</button>
+    <button class="seg-btn" data-market="cmbc">民生积存金</button>
   </div>
 
   <section class="section">
@@ -218,37 +235,62 @@
       <button id="belowAdd" aria-label="添加跌破阈值">＋</button>
     </div>
   </section>
+
+  <section class="recent-card">
+    <div class="sec-head">
+      <div class="sec-title">最近预警</div>
+      <span class="tag" id="alertCount">0</span>
+    </div>
+    <div id="recentList"></div>
+  </section>
 </div>
 
 <div class="savebar">
-  <button class="save" id="btnSave" disabled>
-    <span id="saveLabel">保存到云端</span>
-  </button>
+  <button class="save" id="btnSave" disabled><span id="saveLabel">已与云端同步</span></button>
 </div>
 
 <div class="toast" id="toast"></div>
-
 <div class="scrim" id="scrim"></div>
+
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="设置">
   <div class="grab"></div>
-  <h2>连接设置</h2>
-  <p>用于把阈值写入 GitHub 仓库。Token 只保存在本机浏览器，不会发往别处。</p>
+  <h2>设置</h2>
+  <p>Token 只保存在本机浏览器，用于把配置写入 GitHub 仓库。</p>
+
   <div class="field">
-    <label>GitHub Token（需要 Contents 读写权限）</label>
+    <label>GitHub Token</label>
     <input id="tokenInput" type="password" placeholder="ghp_… 或 github_pat_…" autocomplete="off" spellcheck="false">
   </div>
   <div class="field">
     <label>仓库</label>
-    <input id="repoInput" placeholder="owner/repo" autocomplete="off" spellcheck="false">
+    <input id="repoInput" autocomplete="off" spellcheck="false">
   </div>
+
+  <label style="display:block;font-size:12px;color:var(--faint);margin:22px 0 6px;letter-spacing:.3px">提醒时间段</label>
+  <div class="row2">
+    <div class="field"><input id="startInput" type="time" value="09:00"></div>
+    <div class="field"><input id="endInput" type="time" value="23:50"></div>
+  </div>
+
+  <div class="field">
+    <label>检查间隔</label>
+    <select id="intervalSelect">
+      <option value="10">每 10 分钟</option>
+      <option value="15">每 15 分钟</option>
+      <option value="20">每 20 分钟</option>
+      <option value="30">每 30 分钟</option>
+      <option value="60">每 60 分钟</option>
+    </select>
+  </div>
+
   <div class="hint" id="statusHint"></div>
   <div class="sheet-actions">
     <button id="btnCancel">取消</button>
     <button class="primary" id="btnSaveSettings">保存</button>
   </div>
   <div class="hint">
-    Token 获取：GitHub → Settings → Developer settings → Personal access tokens →
-    勾选 <b>repo</b>（fine-grained 则给 Contents: Read and write）。
+    Token 权限：fine-grained 勾 <b>Contents: Read and write</b>；classic 勾 <b>repo</b>。
+    设置保存后会一并写入云端，下一次检查（≤10 分钟）生效。
   </div>
 </div>
 
@@ -260,38 +302,39 @@
   var BRANCH = "main";
   var PATH = "alerts.json";
   var NTFY_TOPIC = "gold-alert-sd-7f3k9x2q";
-
   var LS = { token: "gold_alert_token_v1", repo: "gold_alert_repo_v1" };
+  var UNITS = { intl: "USD/oz", cmbc: "元/克" };
+  var NAMES = { intl: "国际金价", cmbc: "民生积存金" };
 
   var state = {
-    above: [], below: [],
-    sha: null,
+    intl: { above: [], below: [] },
+    cmbc: { above: [], below: [] },
+    config: { window_start: "09:00", window_end: "23:50", interval_minutes: 10 },
+    market: "intl",
     dirty: false,
-    price: null,
-    cmbc: null,
-    priceTime: null
+    price: { intl: null, cmbc: null },
+    history: [],
+    alerts: []
   };
 
-  var $ = function (id) { return document.getElementById(id); };
+  function $(id) { return document.getElementById(id); }
+  function token() { return localStorage.getItem(LS.token) || ""; }
+  function repo() { return localStorage.getItem(LS.repo) || DEFAULT_REPO; }
+  function apiUrl(path) { return "https://api.github.com/repos/" + repo() + "/contents/" + path; }
+  function fmt(n) { return Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
 
+  var toastTimer;
   function toast(msg, isErr) {
     var t = $("toast");
     t.textContent = msg;
     t.className = "toast show" + (isErr ? " err" : "");
-    clearTimeout(toast._t);
-    toast._t = setTimeout(function () { t.className = "toast"; }, 2600);
-  }
-
-  function token() { return localStorage.getItem(LS.token) || ""; }
-  function repo() { return localStorage.getItem(LS.repo) || DEFAULT_REPO; }
-
-  function fmt(n) {
-    return n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.className = "toast"; }, 2600);
   }
 
   function b64encode(str) {
     var bytes = new TextEncoder().encode(str), bin = "";
-    bytes.forEach(function (b) { bin += String.fromCharCode(b); });
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
     return btoa(bin);
   }
   function b64decode(b64) {
@@ -300,52 +343,43 @@
     return new TextDecoder().decode(bytes);
   }
 
-  /* ---------- 数据 ---------- */
+  /* ---------- 读取 ---------- */
   function applyAlerts(data) {
-    state.above = []; state.below = [];
-    (data.intl || []).forEach(function (it) {
-      var row = { direction: it.direction, price: Number(it.price) };
-      if (row.direction === "above") state.above.push(row);
-      else if (row.direction === "below") state.below.push(row);
+    ["intl", "cmbc"].forEach(function (m) {
+      state[m] = { above: [], below: [] };
+      (data[m] || []).forEach(function (it) {
+        var p = Number(it.price);
+        if (!p) return;
+        var d = it.direction === "above" ? "above" : "below";
+        state[m][d].push(p);
+      });
+      state[m].above.sort(function (a, b) { return a - b; });
+      state[m].below.sort(function (a, b) { return a - b; });
     });
-    state.above.sort(function (a, b) { return a.price - b.price; });
-    state.below.sort(function (a, b) { return a.price - b.price; });
+    if (data.config) {
+      state.config.window_start = data.config.window_start || "09:00";
+      state.config.window_end = data.config.window_end || "23:50";
+      state.config.interval_minutes = Number(data.config.interval_minutes) || 10;
+    }
     render();
-  }
-
-  function buildPayload() {
-    return {
-      intl: state.above.map(function (x) {
-        return { direction: "above", price: x.price, note: "涨破 " + x.price.toFixed(2) };
-      }).concat(state.below.map(function (x) {
-        return { direction: "below", price: x.price, note: "跌破 " + x.price.toFixed(2) };
-      })),
-      cmbc: []
-    };
-  }
-
-  function apiUrl(path) {
-    return "https://api.github.com/repos/" + repo() + "/contents/" + path;
   }
 
   function loadAlerts() {
     $("banner").hidden = true;
-    // 同源读取（Pages 上的副本），不依赖 GitHub API，秒开
     return fetch("./alerts.json?t=" + Date.now(), { cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(applyAlerts)
-      .catch(function () {
-        // 兜底：直接读 GitHub Contents API
+      .catch(function (err) {
         var headers = { "Accept": "application/vnd.github+json" };
-        if (token()) headers["Authorization"] = "Bearer " + token();
+        if (token()) headers.Authorization = "Bearer " + token();
         return fetch(apiUrl(PATH) + "?ref=" + BRANCH, { headers: headers, cache: "no-store" })
           .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
           .then(function (j) { applyAlerts(JSON.parse(b64decode(j.content))); });
       })
-      .catch(function (e) {
+      .catch(function (err) {
         $("banner").hidden = false;
-        $("bannerText").textContent = "无法读取云端阈值，请检查网络后重试";
-        toast("读取失败：" + e.message, true);
+        $("bannerText").textContent = "无法读取云端配置，请检查网络后重试";
+        toast("读取失败：" + err.message, true);
       });
   }
 
@@ -353,126 +387,204 @@
     fetch("https://api.gold-api.com/price/XAU", { cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        state.price = Number(d.price);
-        state.priceTime = d.updatedAt ? new Date(d.updatedAt) : new Date();
-        renderPrice();
-        render();
+        if (d && d.price) { state.price.intl = Number(d.price); render(); }
       })
-      .catch(function () {
-        $("priceMeta").textContent = "金价获取失败";
-        $("liveDot").className = "dot off";
-      });
+      .catch(function () {});
 
-    // 民生积存金：从 ntfy 最近一条播报里取
     fetch("https://ntfy.sh/" + NTFY_TOPIC + "/json?poll=1&since=24h", { cache: "no-store" })
       .then(function (r) { return r.text(); })
       .then(function (txt) {
-        var lines = txt.trim().split("\n").filter(Boolean);
-        for (var i = lines.length - 1; i >= 0; i--) {
-          try {
-            var m = JSON.parse(lines[i]);
-            var hit = /民生\s+([\d,]+\.?\d*)\s*元\/克/.exec(m.message || "");
-            if (hit) { state.cmbc = Number(hit[1].replace(/,/g, "")); break; }
-          } catch (e) {}
+        var lines = txt.trim().split("\n").filter(Boolean), cmbc = null, alerts = [];
+        for (var i = 0; i < lines.length; i++) {
+          var m;
+          try { m = JSON.parse(lines[i]); } catch (e) { continue; }
+          var body = m.message || "";
+          var hit = /民生\s+([\d,]+\.?\d*)\s*元\/克/.exec(body);
+          if (hit && cmbc === null) cmbc = Number(hit[1].replace(/,/g, ""));
+          if ((m.title || "").indexOf("⚡") === 0) {
+            alerts.push({ time: m.time, title: m.title, message: body.split("\n")[0] });
+          }
         }
-        renderPrice();
+        state.price.cmbc = cmbc;
+        state.alerts = alerts.slice(-5).reverse();
         render();
       })
       .catch(function () {});
   }
 
-  function renderPrice() {
-    var p = $("price"), meta = $("priceMeta");
-    if (state.price) {
-      p.innerHTML = fmt(state.price) + "<small>/oz</small>";
-      $("liveDot").className = "dot";
-      var t = state.priceTime;
-      meta.textContent = t ? "实时 · " + t.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" }) : "实时";
-      $("sourceLine").textContent = "XAU/USD · 云端同步";
+  function loadHistory() {
+    fetch("./history.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        state.history = (d.points || []).filter(function (p) { return p && p.length === 2; });
+        renderChart();
+      })
+      .catch(function () { renderChart(); });
+  }
+
+  /* ---------- 图表 ---------- */
+  function renderChart() {
+    var svg = $("chart");
+    var now = Date.now() / 1000;
+    var pts = state.history.filter(function (p) { return p[0] >= now - 86400; });
+    if (pts.length < 2) {
+      svg.innerHTML = '<text x="160" y="64" text-anchor="middle" fill="#6E6A64" font-size="12">历史数据收集中…</text>';
+      $("rangeLow").textContent = "—";
+      $("rangeHigh").textContent = "—";
+      $("chartHint").textContent = "近 24 小时";
+      return;
     }
-    $("cmbcLine").innerHTML = state.cmbc ? "民生 <b>" + fmt(state.cmbc) + "</b> 元/克" : "";
+    var vals = pts.map(function (p) { return p[1]; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    var span = (max - min) || 1;
+    var W = 320, H = 120, PAD = 6;
+    var n = pts.length;
+    var xs = [], ys = [];
+    for (var i = 0; i < n; i++) {
+      xs.push(PAD + i * (W - 2 * PAD) / (n - 1));
+      ys.push(H - PAD - (vals[i] - min) / span * (H - 2 * PAD));
+    }
+    var line = "";
+    for (var j = 0; j < n; j++) line += (j ? "L" : "M") + xs[j].toFixed(1) + " " + ys[j].toFixed(1);
+    var area = line + " L" + xs[n - 1].toFixed(1) + " " + (H - PAD) + " L" + xs[0].toFixed(1) + " " + (H - PAD) + " Z";
+    svg.innerHTML =
+      '<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#E5B455" stop-opacity=".34"/>' +
+      '<stop offset="100%" stop-color="#E5B455" stop-opacity="0"/></linearGradient>' +
+      '<linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">' +
+      '<stop offset="0%" stop-color="#B8842F"/><stop offset="100%" stop-color="#F2C972"/></linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#areaGrad)"/>' +
+      '<path d="' + line + '" fill="none" stroke="url(#lineGrad)" stroke-width="2.2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
+      '<circle cx="' + xs[n - 1].toFixed(1) + '" cy="' + ys[n - 1].toFixed(1) +
+      '" r="3" fill="#F2C972" stroke="#141419" stroke-width="2"/>';
+    $("rangeLow").textContent = "低 " + fmt(min);
+    $("rangeHigh").textContent = "高 " + fmt(max);
+    $("chartHint").textContent = "近 24 小时 · " + pts.length + " 个点";
+
+    var first = vals[0], last = vals[n - 1], diff = (last - first) / first * 100;
+    var chip = $("chg");
+    chip.hidden = false;
+    chip.textContent = (diff >= 0 ? "+" : "") + diff.toFixed(2) + "%";
+    chip.className = "chip " + (diff > 0.001 ? "pos" : (diff < -0.001 ? "neg" : ""));
   }
 
   /* ---------- 渲染 ---------- */
-  function rowHtml(item, isAbove) {
-    var diff = state.price ? (item.price - state.price) / state.price * 100 : null;
-    var crossed = state.price
-      ? (isAbove ? state.price >= item.price : state.price <= item.price)
-      : false;
-    var delta = "";
-    if (diff !== null) {
-      delta = "距现价 " + (diff >= 0 ? "+" : "") + diff.toFixed(2) + "%";
-      if (crossed) delta += " · 已越界";
+  function rowHtml(price, market, dir) {
+    var unit = UNITS[market];
+    var cur = state.price[market];
+    var diffTxt = "", crossed = false;
+    if (cur) {
+      var d = (price - cur) / cur * 100;
+      diffTxt = "距现价 " + (d >= 0 ? "+" : "") + d.toFixed(2) + "%";
+      crossed = dir === "above" ? cur >= price : cur <= price;
+      if (crossed) diffTxt += " · 已越界";
     }
-    return '' +
-      '<div class="row" data-price="' + item.price + '" data-dir="' + (isAbove ? "above" : "below") + '">' +
-        '<div class="grow">' +
-          '<div class="val num">' + fmt(item.price) + '<span class="unit">USD/oz</span></div>' +
-          '<div class="delta' + (crossed ? " warn" : "") + '">' + delta + '</div>' +
-        '</div>' +
-        '<button class="del" aria-label="删除">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">' +
-          '<path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg>' +
-        '</button>' +
-      '</div>';
+    return '<div class="row" data-price="' + price + '" data-dir="' + dir + '">' +
+      '<div class="grow"><div class="val num">' + fmt(price) + '<span class="unit">' + unit + '</span></div>' +
+      '<div class="delta' + (crossed ? " warn" : "") + '">' + diffTxt + '</div></div>' +
+      '<button class="del" aria-label="删除">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">' +
+      '<path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg></button></div>';
   }
 
   function render() {
-    $("aboveRows").innerHTML = state.above.length
-      ? state.above.map(function (x) { return rowHtml(x, true); }).join("")
+    var m = state.market;
+    $("aboveRows").innerHTML = state[m].above.length
+      ? state[m].above.map(function (p) { return rowHtml(p, m, "above"); }).join("")
       : '<div class="empty">还没有涨破阈值</div>';
-    $("belowRows").innerHTML = state.below.length
-      ? state.below.map(function (x) { return rowHtml(x, false); }).join("")
+    $("belowRows").innerHTML = state[m].below.length
+      ? state[m].below.map(function (p) { return rowHtml(p, m, "below"); }).join("")
       : '<div class="empty">还没有跌破阈值</div>';
-    $("aboveCount").textContent = state.above.length;
-    $("belowCount").textContent = state.below.length;
+    $("aboveCount").textContent = state[m].above.length;
+    $("belowCount").textContent = state[m].below.length;
+    $("aboveInput").placeholder = "输入价位，如 " + (m === "intl" ? "4250" : "900");
+    $("belowInput").placeholder = "输入价位，如 " + (m === "intl" ? "4100" : "880");
+
+    if (state.price.intl) {
+      $("price").innerHTML = fmt(state.price.intl) + "<small>/oz</small>";
+    }
+    var iv = state.config.interval_minutes;
+    $("sourceLine").textContent = "每 " + iv + " 分钟检查 · " +
+      state.config.window_start + "–" + state.config.window_end;
+
+    $("recentList").innerHTML = state.alerts.length
+      ? state.alerts.slice(0, 3).map(function (a) {
+          var d = new Date(a.time * 1000);
+          var hh = ("0" + d.getHours()).slice(-2), mm = ("0" + d.getMinutes()).slice(-2);
+          return '<div class="alert-item"><div class="alert-time">' + hh + ":" + mm +
+            '</div><div class="alert-text">' + escapeHtml(a.message || a.title) + '</div></div>';
+        }).join("")
+      : '<div class="alert-item"><div class="alert-text" style="color:var(--faint)">暂无预警记录</div></div>';
+    $("alertCount").textContent = state.alerts.length;
+
     var btn = $("btnSave");
     btn.disabled = !state.dirty;
     $("saveLabel").textContent = state.dirty ? "保存到云端" : "已与云端同步";
+
+    document.querySelectorAll(".seg-btn").forEach(function (b) {
+      b.classList.toggle("active", b.dataset.market === state.market);
+    });
   }
 
-  function addThreshold(isAbove) {
-    var input = $(isAbove ? "aboveInput" : "belowInput");
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ---------- 编辑 ---------- */
+  function addThreshold(dir, inputId) {
+    var input = $(inputId);
     var v = parseFloat(String(input.value).replace(/,/g, ""));
     if (!v || v <= 0) { toast("请输入有效价位", true); return; }
     v = Math.round(v * 100) / 100;
-    var list = isAbove ? state.above : state.below;
-    if (list.some(function (x) { return x.price === v; })) { toast("这个价位已经有了"); return; }
-    list.push({ price: v, direction: isAbove ? "above" : "below" });
-    list.sort(function (a, b) { return a.price - b.price; });
+    var list = state[state.market][dir];
+    if (list.indexOf(v) >= 0) { toast("这个价位已经有了"); return; }
+    list.push(v);
+    list.sort(function (a, b) { return a - b; });
     input.value = "";
     state.dirty = true;
     render();
-    toast((isAbove ? "已添加涨破 " : "已添加跌破 ") + fmt(v));
+    toast("已添加 " + (dir === "above" ? "涨破 " : "跌破 ") + fmt(v));
   }
 
   function removeThreshold(dir, price) {
-    var list = dir === "above" ? state.above : state.below;
-    state[dir] = list.filter(function (x) { return x.price !== price; });
+    var list = state[state.market][dir];
+    var i = list.indexOf(price);
+    if (i >= 0) list.splice(i, 1);
     state.dirty = true;
     render();
     toast("已删除 " + fmt(price));
   }
 
-  /* ---------- 保存 ---------- */
-  function authHeaders() {
-    return {
-      "Authorization": "Bearer " + token(),
-      "Accept": "application/vnd.github+json",
-      "Content-Type": "application/json"
-    };
+  function buildPayload() {
+    function pack(m) {
+      return state[m].above.map(function (p) {
+        return { direction: "above", price: p, note: "涨破 " + p.toFixed(2) };
+      }).concat(state[m].below.map(function (p) {
+        return { direction: "below", price: p, note: "跌破 " + p.toFixed(2) };
+      }));
+    }
+    return { intl: pack("intl"), cmbc: pack("cmbc"), config: state.config };
   }
 
   function ghPut(path, text, message) {
     var headers = { "Accept": "application/vnd.github+json" };
-    if (token()) headers["Authorization"] = "Bearer " + token();
+    if (token()) headers.Authorization = "Bearer " + token();
     return fetch(apiUrl(path) + "?ref=" + BRANCH, { headers: headers, cache: "no-store" })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
         var body = { message: message, content: b64encode(text), branch: BRANCH };
         if (j && j.sha) body.sha = j.sha;
         return fetch(apiUrl(path), {
-          method: "PUT", headers: authHeaders(), body: JSON.stringify(body)
+          method: "PUT",
+          headers: {
+            "Authorization": "Bearer " + token(),
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(body)
         }).then(function (r) {
           return r.json().then(function (resp) {
             if (!r.ok) throw new Error(resp.message || ("HTTP " + r.status));
@@ -482,20 +594,17 @@
       });
   }
 
-  function save() {
-    if (!token()) { openSettings(); toast("先配置 Token", true); return; }
+  function saveAll() {
+    if (!token()) { openSettings(); toast("先配置 Github Token", true); return; }
     $("btnSave").disabled = true;
     $("saveLabel").innerHTML = '<span class="spin"></span>保存中…';
     var text = JSON.stringify(buildPayload(), null, 2);
-
     ghPut(PATH, text, "alerts: update via web app")
-      .then(function () {
-        return ghPut("docs/alerts.json", text, "alerts: sync page copy");
-      })
+      .then(function () { return ghPut("docs/alerts.json", text, "alerts: sync page copy"); })
       .then(function () {
         state.dirty = false;
         render();
-        toast("已保存，云端下一次检查生效");
+        toast("已保存，下一次检查（≤10 分钟）生效");
       })
       .catch(function (e) {
         render();
@@ -507,7 +616,10 @@
   function openSettings() {
     $("tokenInput").value = token();
     $("repoInput").value = repo();
-    $("statusHint").textContent = token() ? "当前已配置 Token" : "尚未配置 Token，只能查看阈值";
+    $("startInput").value = state.config.window_start;
+    $("endInput").value = state.config.window_end;
+    $("intervalSelect").value = String(state.config.interval_minutes);
+    $("statusHint").textContent = token() ? "当前已配置 Token" : "尚未配置 Token，只能查看";
     $("scrim").classList.add("show");
     $("sheet").classList.add("show");
   }
@@ -517,46 +629,47 @@
   }
 
   /* ---------- 事件 ---------- */
-  $("aboveAdd").addEventListener("click", function () { addThreshold(true); });
-  $("belowAdd").addEventListener("click", function () { addThreshold(false); });
-  ["above", "below"].forEach(function (k) {
-    $(k + "Input").addEventListener("keydown", function (e) {
-      if (e.key === "Enter") addThreshold(k === "above");
-    });
-  });
+  $("aboveAdd").addEventListener("click", function () { addThreshold("above", "aboveInput"); });
+  $("belowAdd").addEventListener("click", function () { addThreshold("below", "belowInput"); });
+  $("aboveInput").addEventListener("keydown", function (e) { if (e.key === "Enter") addThreshold("above", "aboveInput"); });
+  $("belowInput").addEventListener("keydown", function (e) { if (e.key === "Enter") addThreshold("below", "belowInput"); });
+
   document.addEventListener("click", function (e) {
     var del = e.target.closest ? e.target.closest(".del") : null;
     if (del) {
       var row = del.closest(".row");
       removeThreshold(row.dataset.dir, parseFloat(row.dataset.price));
+      return;
     }
+    var seg = e.target.closest ? e.target.closest(".seg-btn") : null;
+    if (seg) { state.market = seg.dataset.market; render(); }
   });
-  $("btnSave").addEventListener("click", save);
+
+  $("btnSave").addEventListener("click", saveAll);
   $("btnSettings").addEventListener("click", openSettings);
-  $("btnRetry").addEventListener("click", function () {
-    $("banner").hidden = true;
-    loadAlerts();
-  });
   $("btnCancel").addEventListener("click", closeSettings);
   $("scrim").addEventListener("click", closeSettings);
+  $("btnRetry").addEventListener("click", function () { $("banner").hidden = true; loadAlerts(); });
+
   $("btnSaveSettings").addEventListener("click", function () {
     var tk = $("tokenInput").value.trim();
-    var rp = $("repoInput").value.trim() || DEFAULT_REPO;
     if (tk) localStorage.setItem(LS.token, tk); else localStorage.removeItem(LS.token);
-    localStorage.setItem(LS.repo, rp);
+    localStorage.setItem(LS.repo, $("repoInput").value.trim() || DEFAULT_REPO);
+    state.config.window_start = $("startInput").value || "09:00";
+    state.config.window_end = $("endInput").value || "23:50";
+    state.config.interval_minutes = Number($("intervalSelect").value) || 10;
+    state.dirty = true;
     closeSettings();
-    toast(tk ? "Token 已保存" : "已清除 Token");
-    loadAlerts();
+    render();
+    if (tk) saveAll(); else toast("已保存到本机（未配置 Token）");
   });
 
   /* ---------- 启动 ---------- */
-  window.__goldApp = { apply: applyAlerts, render: render, state: state };
+  window.__goldApp = { apply: applyAlerts, render: render, state: state, chart: renderChart };
   loadPrice();
   loadAlerts();
-  setInterval(loadPrice, 60000);
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("sw.js").catch(function () {});
-  }
+  loadHistory();
+  setInterval(function () { loadPrice(); loadHistory(); }, 120000);
 })();
 </script>
 </body>

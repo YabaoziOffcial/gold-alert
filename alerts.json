@@ -3,13 +3,28 @@
     {
       "direction": "above",
       "price": 4250,
-      "note": "涨破 4250.00"
+      "note": "涨破 4250"
+    },
+    {
+      "direction": "above",
+      "price": 4300,
+      "note": "涨破 4300"
     },
     {
       "direction": "below",
       "price": 4100,
-      "note": "跌破 4100.00"
+      "note": "跌破 4100"
+    },
+    {
+      "direction": "below",
+      "price": 4000,
+      "note": "跌破 4000"
     }
   ],
-  "cmbc": []
+  "cmbc": [],
+  "config": {
+    "window_start": "09:00",
+    "window_end": "23:50",
+    "interval_minutes": 10
+  }
 }
