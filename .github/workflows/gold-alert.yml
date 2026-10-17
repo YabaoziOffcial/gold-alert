@@ -1,0 +1,35 @@
+name: gold-alert
+
+on:
+  schedule:
+    # 北京时间 09:00 / 11:30 / 15:00 / 20:00（UTC+8，故减 8 小时）
+    - cron: '0 1 * * 1-5'
+    - cron: '30 3 * * 1-5'
+    - cron: '0 7 * * 1-5'
+    - cron: '0 12 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gold-alert
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 抓取金价并推送到 ntfy
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          NTFY_SERVER: ${{ vars.NTFY_SERVER || 'https://ntfy.sh' }}
+          NTFY_PRIORITY: '4'
+        run: python cloud/gold_alert_cloud.py
