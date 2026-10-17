@@ -2,11 +2,14 @@ name: gold-alert
 
 on:
   schedule:
-    # 北京时间 09:00 / 11:30 / 15:00 / 20:00（UTC+8，故减 8 小时）
-    - cron: '0 1 * * 1-5'
-    - cron: '30 3 * * 1-5'
-    - cron: '0 7 * * 1-5'
-    - cron: '0 12 * * 1-5'
+    # 交易日每 10 分钟检查一次（价格预警用），北京时间 09:00–23:50
+    - cron: '*/10 1-15 * * 1-5'
+    # 定时播报
+    - cron: '0 1 * * 1-5'      # 09:00
+    - cron: '30 3 * * 1-5'     # 11:30
+    - cron: '0 7 * * 1-5'      # 15:00
+    - cron: '0 12 * * 1-5'     # 20:00
+    # 周末只在 09:30 播报一次
     - cron: '30 1 * * 0,6'
   workflow_dispatch:
 
@@ -24,14 +27,21 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: 恢复预警状态
+        uses: actions/cache@v4
+        with:
+          path: state
+          key: gold-state-${{ github.run_id }}
+          restore-keys: |
+            gold-state-
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: 抓取金价并推送到 ntfy
+      - name: 播报 / 预警
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           NTFY_SERVER: ${{ vars.NTFY_SERVER || 'https://ntfy.sh' }}
           NTFY_PRIORITY: '4'
-          FORCE: '1'
         run: python cloud/gold_alert_cloud.py
