@@ -19,11 +19,6 @@
       "direction": "above",
       "price": 4300.0,
       "note": "涨破 4300.00"
-    },
-    {
-      "direction": "above",
-      "price": 4350.0,
-      "note": "涨破 4350.00"
     }
   ],
   "cmbc": []
