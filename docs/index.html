@@ -117,7 +117,9 @@
 
   .savebar{position:fixed;left:0;right:0;bottom:0;padding:12px var(--s2) calc(env(safe-area-inset-bottom) + 14px);
     background:linear-gradient(to top,rgba(10,10,12,.98) 40%,rgba(10,10,12,0));
-    display:flex;justify-content:center;z-index:20}
+    display:flex;justify-content:center;z-index:20;
+    transition:transform .3s var(--ease),opacity .25s var(--ease)}
+  .savebar.hidden{transform:translateY(120%);opacity:0;pointer-events:none}
   .save{max-width:460px;width:100%;height:52px;border:none;border-radius:16px;font-size:16px;font-weight:600;
     color:#1A1408;background:linear-gradient(135deg,#F2C972,#D9A23F);box-shadow:0 10px 26px rgba(229,180,85,.28);
     display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s var(--ease)}
@@ -506,7 +508,8 @@
     }
     var iv = state.config.interval_minutes;
     $("sourceLine").textContent = "每 " + iv + " 分钟检查 · " +
-      state.config.window_start + "–" + state.config.window_end;
+      state.config.window_start + "–" + state.config.window_end +
+      (state.dirty ? " · 未保存" : " · 已同步");
 
     $("recentList").innerHTML = state.alerts.length
       ? state.alerts.slice(0, 3).map(function (a) {
@@ -521,6 +524,7 @@
     var btn = $("btnSave");
     btn.disabled = !state.dirty;
     $("saveLabel").textContent = state.dirty ? "保存到云端" : "已与云端同步";
+    document.querySelector(".savebar").classList.toggle("hidden", !state.dirty);
 
     document.querySelectorAll(".seg-btn").forEach(function (b) {
       b.classList.toggle("active", b.dataset.market === state.market);
