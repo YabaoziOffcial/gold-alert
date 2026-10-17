@@ -106,9 +106,14 @@ def main():
     priority = int(os.environ.get("NTFY_PRIORITY") or 4)
 
     now = datetime.now(TZ_CN)
-    if now.weekday() >= 5 and os.environ.get("FORCE") != "1":
-        print("周末休市，跳过")
-        return 0
+    is_weekend = now.weekday() >= 5
+    forced = (os.environ.get("FORCE") == "1"
+              or os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch")
+    if is_weekend and not forced:
+        minutes = now.hour * 60 + now.minute
+        if not (9 * 60 + 15 <= minutes <= 10 * 60 + 30):
+            print("周末只播报 09:30 一次，当前不在播报窗口，跳过")
+            return 0
 
     intl = cmbc = None
     errors = []
@@ -148,6 +153,8 @@ def main():
     message = "\n".join(lines)
     if errors:
         message += "\n" + "｜".join(errors)
+    if is_weekend:
+        message += "\n周末休息😴"
 
     resp = http_post_json(server + "/", {
         "topic": topic, "title": title, "message": message,
