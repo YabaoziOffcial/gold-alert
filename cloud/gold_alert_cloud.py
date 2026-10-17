@@ -98,6 +98,11 @@ def arrow_pct(value):
 
 
 def main():
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:                     # noqa: BLE001
+        pass
     topic = (os.environ.get("NTFY_TOPIC") or "").strip()
     if not topic:
         print("缺少环境变量 NTFY_TOPIC", file=sys.stderr)
