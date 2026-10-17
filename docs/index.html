@@ -30,7 +30,7 @@
     color:var(--text);
     font:400 16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Segoe UI",Roboto,sans-serif;
     min-height:100vh;
-    padding:calc(env(safe-area-inset-top) + 20px) var(--s2) calc(env(safe-area-inset-bottom) + 104px);
+    padding:calc(env(safe-area-inset-top) + 20px) var(--s2) calc(env(safe-area-inset-bottom) + 140px);
     -webkit-font-smoothing:antialiased;
   }
   .wrap{max-width:460px;margin:0 auto}
@@ -323,27 +323,28 @@
     };
   }
 
-  var alertsUrl = function () {
-    return "https://api.github.com/repos/" + repo() + "/contents/" + PATH;
-  };
+  function apiUrl(path) {
+    return "https://api.github.com/repos/" + repo() + "/contents/" + path;
+  }
 
   function loadAlerts() {
-    var headers = { "Accept": "application/vnd.github+json" };
-    var tk = token();
-    if (tk) headers["Authorization"] = "Bearer " + tk;
-    return fetch(alertsUrl() + "?ref=" + BRANCH, { headers: headers, cache: "no-store" })
-      .then(function (r) {
-        if (!r.ok) throw new Error("读取阈值失败 HTTP " + r.status);
-        return r.json();
-      })
-      .then(function (j) {
-        state.sha = j.sha;
-        applyAlerts(JSON.parse(b64decode(j.content)));
+    $("banner").hidden = true;
+    // 同源读取（Pages 上的副本），不依赖 GitHub API，秒开
+    return fetch("./alerts.json?t=" + Date.now(), { cache: "no-store" })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(applyAlerts)
+      .catch(function () {
+        // 兜底：直接读 GitHub Contents API
+        var headers = { "Accept": "application/vnd.github+json" };
+        if (token()) headers["Authorization"] = "Bearer " + token();
+        return fetch(apiUrl(PATH) + "?ref=" + BRANCH, { headers: headers, cache: "no-store" })
+          .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+          .then(function (j) { applyAlerts(JSON.parse(b64decode(j.content))); });
       })
       .catch(function (e) {
         $("banner").hidden = false;
-        $("bannerText").textContent = "无法读取云端阈值：" + e.message;
-        toast(e.message, true);
+        $("bannerText").textContent = "无法读取云端阈值，请检查网络后重试";
+        toast("读取失败：" + e.message, true);
       });
   }
 
@@ -453,40 +454,47 @@
   }
 
   /* ---------- 保存 ---------- */
-  function save() {
-    var tk = token();
-    if (!tk) { openSettings(); toast("先配置 Token", true); return; }
-    var btn = $("btnSave");
-    btn.disabled = true;
-    $("saveLabel").innerHTML = '<span class="spin"></span>保存中…';
-
-    var body = {
-      message: "alerts: update via web app",
-      content: b64encode(JSON.stringify(buildPayload(), null, 2)),
-      branch: BRANCH
+  function authHeaders() {
+    return {
+      "Authorization": "Bearer " + token(),
+      "Accept": "application/vnd.github+json",
+      "Content-Type": "application/json"
     };
-    if (state.sha) body.sha = state.sha;
+  }
 
-    fetch(alertsUrl(), {
-      method: "PUT",
-      headers: {
-        "Authorization": "Bearer " + tk,
-        "Accept": "application/vnd.github+json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body)
-    })
-      .then(function (r) {
-        return r.json().then(function (j) {
-          if (!r.ok) throw new Error(j.message || "HTTP " + r.status);
-          return j;
-        });
-      })
+  function ghPut(path, text, message) {
+    var headers = { "Accept": "application/vnd.github+json" };
+    if (token()) headers["Authorization"] = "Bearer " + token();
+    return fetch(apiUrl(path) + "?ref=" + BRANCH, { headers: headers, cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (j) {
-        state.sha = j.content ? j.content.sha : state.sha;
+        var body = { message: message, content: b64encode(text), branch: BRANCH };
+        if (j && j.sha) body.sha = j.sha;
+        return fetch(apiUrl(path), {
+          method: "PUT", headers: authHeaders(), body: JSON.stringify(body)
+        }).then(function (r) {
+          return r.json().then(function (resp) {
+            if (!r.ok) throw new Error(resp.message || ("HTTP " + r.status));
+            return resp;
+          });
+        });
+      });
+  }
+
+  function save() {
+    if (!token()) { openSettings(); toast("先配置 Token", true); return; }
+    $("btnSave").disabled = true;
+    $("saveLabel").innerHTML = '<span class="spin"></span>保存中…';
+    var text = JSON.stringify(buildPayload(), null, 2);
+
+    ghPut(PATH, text, "alerts: update via web app")
+      .then(function () {
+        return ghPut("docs/alerts.json", text, "alerts: sync page copy");
+      })
+      .then(function () {
         state.dirty = false;
         render();
-        toast("已保存，云端下次运行生效");
+        toast("已保存，云端下一次检查生效");
       })
       .catch(function (e) {
         render();

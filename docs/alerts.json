@@ -1,0 +1,25 @@
+{
+  "intl": [
+    {
+      "direction": "below",
+      "price": 4000.0,
+      "note": "跌破 4000.00"
+    },
+    {
+      "direction": "below",
+      "price": 4100.0,
+      "note": "跌破 4100.00"
+    },
+    {
+      "direction": "above",
+      "price": 4250.0,
+      "note": "涨破 4250.00"
+    },
+    {
+      "direction": "above",
+      "price": 4300.0,
+      "note": "涨破 4300.00"
+    }
+  ],
+  "cmbc": []
+}
