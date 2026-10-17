@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0A0A0C">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>金价预警</title>
@@ -50,6 +51,13 @@
   .icon-btn svg{width:19px;height:19px}
 
   /* ---------- hero ---------- */
+  .banner{margin:-8px 0 var(--s2);display:flex;align-items:center;gap:10px;
+    background:rgba(255,93,93,.10);border:1px solid rgba(255,93,93,.28);color:#FFC9C9;
+    border-radius:12px;padding:10px 12px;font-size:12.5px}
+  .banner[hidden]{display:none}
+  .banner span{flex:1}
+  .banner button{background:transparent;border:1px solid rgba(255,255,255,.18);color:#FFD7D7;
+    border-radius:8px;padding:5px 10px;font-size:12px}
   .hero{background:linear-gradient(160deg,#1B1A18,#121116 60%);border:1px solid var(--line);
     border-radius:var(--r-xl);padding:var(--s3);box-shadow:var(--shadow);margin-bottom:var(--s3);
     position:relative;overflow:hidden}
@@ -170,6 +178,11 @@
       </svg>
     </button>
   </header>
+
+  <div class="banner" id="banner" hidden>
+    <span id="bannerText">无法读取云端阈值</span>
+    <button id="btnRetry">重试</button>
+  </div>
 
   <div class="hero">
     <div class="hero-label">国际金价 · XAU/USD</div>
@@ -327,7 +340,11 @@
         state.sha = j.sha;
         applyAlerts(JSON.parse(b64decode(j.content)));
       })
-      .catch(function (e) { toast(e.message, true); });
+      .catch(function (e) {
+        $("banner").hidden = false;
+        $("bannerText").textContent = "无法读取云端阈值：" + e.message;
+        toast(e.message, true);
+      });
   }
 
   function loadPrice() {
@@ -507,6 +524,10 @@
   });
   $("btnSave").addEventListener("click", save);
   $("btnSettings").addEventListener("click", openSettings);
+  $("btnRetry").addEventListener("click", function () {
+    $("banner").hidden = true;
+    loadAlerts();
+  });
   $("btnCancel").addEventListener("click", closeSettings);
   $("scrim").addEventListener("click", closeSettings);
   $("btnSaveSettings").addEventListener("click", function () {
@@ -520,6 +541,7 @@
   });
 
   /* ---------- 启动 ---------- */
+  window.__goldApp = { apply: applyAlerts, render: render, state: state };
   loadPrice();
   loadAlerts();
   if ("serviceWorker" in navigator) {
