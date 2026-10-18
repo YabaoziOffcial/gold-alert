@@ -1,4 +1,4 @@
-const CACHE = "gold-alert-v6";
+const CACHE = "gold-alert-v7";
 const PRECACHE = ["./icon.svg", "./manifest.webmanifest"];
 
 self.addEventListener("install", (e) => {
