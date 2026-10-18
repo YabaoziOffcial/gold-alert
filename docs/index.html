@@ -1180,17 +1180,9 @@
   /* ---------------- 阈值线拖动改价 ---------------- */
   var thDrag = null;
   var chartSvg = $("chart");
-  chartSvg.addEventListener("pointerdown", function (e) {
-    var t = e.target;
-    if (!t || !t.classList || !t.classList.contains("th-hit")) return;
-    if (e.stopPropagation) e.stopPropagation();
-    var from = Number(t.getAttribute("data-price"));
-    thDrag = { kind: t.getAttribute("data-kind"), from: from, to: from };
-    try { chartSvg.setPointerCapture(e.pointerId); } catch (err) {}
-  });
-  chartSvg.addEventListener("pointermove", function (e) {
+
+  function onThMove(e) {
     if (!thDrag || !chart.yMap) return;
-    if (e.stopPropagation) e.stopPropagation();
     var rect = $("chartWrap").getBoundingClientRect();
     var H = 150, PADT = 8, PADB = 8;
     var py = (e.clientY - rect.top) / rect.height * H;
@@ -1206,15 +1198,19 @@
     if (rx < 0.28) toKind = "below";
     else if (rx > 0.72) toKind = "above";
     thDrag.toKind = toKind;
-    chart.thPreview = { kind: thDrag.kind, from: thDrag.from, to: thDrag.to, toKind: thDrag.toKind };
+    chart.thPreview = { kind: thDrag.kind, from: thDrag.from, to: thDrag.to, toKind: toKind };
     renderChart();
-  });
+  }
+
   function endThDrag() {
+    document.removeEventListener("pointermove", onThMove);
+    document.removeEventListener("pointerup", onThUp);
+    document.removeEventListener("pointercancel", onThUp);
     if (!thDrag) return;
     var d = thDrag;
     thDrag = null;
     chart.thPreview = null;
-    if (Math.abs(d.to - d.from) >= 0.5) {
+    if (Math.abs(d.to - d.from) >= 0.5 || (d.toKind && d.toKind !== d.kind)) {
       var targetKind = d.toKind || d.kind;
       var arr = state.intl[d.kind];
       var i = arr.indexOf(d.from);
@@ -1232,8 +1228,21 @@
     }
     renderChart();
   }
-  chartSvg.addEventListener("pointerup", endThDrag);
-  chartSvg.addEventListener("pointercancel", function () { thDrag = null; chart.thPreview = null; renderChart(); });
+
+  function onThUp() { endThDrag(); }
+
+  chartSvg.addEventListener("pointerdown", function (e) {
+    var t = e.target;
+    if (!t || !t.classList || !t.classList.contains("th-hit")) return;
+    if (e.stopPropagation) e.stopPropagation();
+    if (e.preventDefault) e.preventDefault();
+    var from = Number(t.getAttribute("data-price"));
+    thDrag = { kind: t.getAttribute("data-kind"), from: from, to: from, toKind: t.getAttribute("data-kind") };
+    try { chartSvg.setPointerCapture(e.pointerId); } catch (err) {}
+    document.addEventListener("pointermove", onThMove, { passive: true });
+    document.addEventListener("pointerup", onThUp);
+    document.addEventListener("pointercancel", onThUp);
+  });
 
   /* ---------------- 拖拽排序 ---------------- */
   var drag = null;
