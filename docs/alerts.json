@@ -3,22 +3,22 @@
     {
       "direction": "above",
       "price": 4250,
-      "note": "涨破 4250"
+      "note": "涨破 4250.00"
     },
     {
       "direction": "above",
       "price": 4300,
-      "note": "涨破 4300"
-    },
-    {
-      "direction": "below",
-      "price": 4100,
-      "note": "跌破 4100"
+      "note": "涨破 4300.00"
     },
     {
       "direction": "below",
       "price": 4000,
-      "note": "跌破 4000"
+      "note": "跌破 4000.00"
+    },
+    {
+      "direction": "below",
+      "price": 4100,
+      "note": "跌破 4100.00"
     }
   ],
   "cmbc": [],
