@@ -1165,7 +1165,12 @@
     var H = 150, PAD = 8;
     var py = (e.clientY - rect.top) / rect.height * H;
     var price = chart.yMap.min + (H - PAD - py) / (H - 2 * PAD) * chart.yMap.span;
-    thDrag.to = Math.round(price);
+    var snapped = Math.round(price);
+    var others = state.intl[thDrag.kind].filter(function (x) { return x !== thDrag.from; });
+    for (var k = 0; k < others.length; k++) {
+      if (Math.abs(others[k] - snapped) <= 4) { snapped = others[k]; break; }
+    }
+    thDrag.to = snapped;
     chart.thPreview = { kind: thDrag.kind, from: thDrag.from, to: thDrag.to };
     renderChart();
   });
