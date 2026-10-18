@@ -35,6 +35,7 @@
   .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 
   header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .header-actions{display:flex;align-items:center}
   .brand{display:flex;align-items:center;gap:10px}
   .mark{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
     background:linear-gradient(145deg,#F0C46A,#B8842F);box-shadow:0 6px 18px rgba(229,180,85,.25)}
@@ -175,6 +176,27 @@
   .banner span{flex:1}
   .banner button{background:transparent;border:1px solid rgba(255,255,255,.18);color:#FFD7D7;
     border-radius:7px;padding:4px 9px;font-size:11.5px}
+  :root[data-theme="light"]{
+    --bg:#F6F4EF; --surface:#FFFFFF; --surface-2:#F1EEE7; --line:rgba(0,0,0,.08);
+    --text:#1B1915; --muted:#6D6861; --faint:#8B857C;
+    --gold:#B8862F; --gold-dim:rgba(184,134,47,.12);
+    --rise:#D84343; --fall:#1E9C5A;
+    --shadow:0 10px 28px rgba(0,0,0,.07);
+  }
+  [data-theme="light"] body{
+    background:radial-gradient(1200px 600px at 50% -10%, rgba(184,134,47,.10), transparent 60%), var(--bg);
+  }
+  [data-theme="light"] .chart-card{background:linear-gradient(160deg,#FFFDF8,#F7F4EC 60%)}
+  [data-theme="light"] .sheet{background:#FFFFFF}
+  [data-theme="light"] .toast{background:#FFFFFF;color:var(--text);border-color:rgba(0,0,0,.1)}
+  [data-theme="light"] .savebar{background:linear-gradient(to top,rgba(246,244,239,.98) 40%,rgba(246,244,239,0))}
+  [data-theme="light"] .scrim{background:rgba(0,0,0,.35)}
+  [data-theme="light"] .tooltip{background:#FFFFFF;border-color:rgba(0,0,0,.1)}
+  [data-theme="light"] .tool-btn{background:rgba(0,0,0,.03)}
+  [data-theme="light"] .add input{background:#FFFFFF}
+  [data-theme="light"] .save[disabled]{color:var(--muted)}
+  [data-theme="light"] .grab{background:#D8D2C6}
+
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style>
 </head>
@@ -192,11 +214,18 @@
         <div class="sub" id="sourceLine">连接中…</div>
       </div>
     </div>
+    <div class="header-actions">
+    <button class="icon-btn" id="btnTheme" aria-label="切换主题" style="margin-right:8px">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>
+      </svg>
+    </button>
     <button class="icon-btn" id="btnSettings" aria-label="设置">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
         <circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 1.55V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.55-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.33-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v.09a1.7 1.7 0 0 0 1.55 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1z"/>
       </svg>
     </button>
+    </div>
   </header>
 
   <div class="banner" id="banner" hidden>
@@ -341,6 +370,7 @@
     price: { intl: null, cmbc: null },
     history: { points: [], daily: [] },
     dailyAll: [],
+    minute: [],
     alerts: []
   };
 
@@ -469,6 +499,41 @@
         render();
       })
       .catch(function () {});
+  }
+
+  function loadSinaMinute() {
+    return new Promise(function (resolve) {
+      var name = "sinaGoldMin" + Date.now();
+      var s = document.createElement("script");
+      s.src = "https://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20" + name +
+        "=/GlobalFuturesService.getGlobalFuturesMinLine?symbol=XAU&_=" + Date.now();
+      s.onload = function () {
+        var d = window[name] || {};
+        try { delete window[name]; } catch (e) {}
+        resolve((d && d.minLine_1d) || []);
+      };
+      s.onerror = function () { resolve([]); };
+      document.head.appendChild(s);
+      setTimeout(function () { resolve([]); }, 8000);
+    });
+  }
+
+  function parseMinute(rows) {
+    var out = [], fallbackDate = null;
+    (rows || []).forEach(function (r) {
+      if (!r || !r.length) return;
+      var dt = null, price = null;
+      if (r.length >= 10) {           // 首行：日期, 价格, ..., 时间, ..., 完整时间
+        dt = r[9]; price = Number(r[1]);
+      } else if (r.length >= 6) {     // 后续行：时间, 价格, ..., 完整时间
+        dt = r[5]; price = Number(r[1]);
+      }
+      if (!dt || !price) return;
+      var ms = Date.parse(String(dt).replace(" ", "T") + "+08:00");
+      if (!isNaN(ms)) out.push([Math.floor(ms / 1000), price]);
+    });
+    out.sort(function (a, b) { return a[0] - b[0]; });
+    return out;
   }
 
   function loadSinaDaily() {
@@ -945,8 +1010,36 @@
     if (tk) saveAll(); else toast("已保存到本机（未配置 Token）");
   });
 
+  function applyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    try { localStorage.setItem("gold_theme", t); } catch (e) {}
+    var icon = document.getElementById("themeIcon");
+    if (icon) {
+      icon.innerHTML = t === "light"
+        ? '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'
+        : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>';
+    }
+    if (typeof renderChart === "function" && state.history) renderChart();
+  }
+  (function initTheme() {
+    var saved = null;
+    try { saved = localStorage.getItem("gold_theme"); } catch (e) {}
+    if (!saved) {
+      saved = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    }
+    applyTheme(saved);
+  })();
+  document.getElementById("btnTheme").addEventListener("click", function () {
+    var cur = document.documentElement.getAttribute("data-theme") || "dark";
+    applyTheme(cur === "dark" ? "light" : "dark");
+  });
+
   window.__goldApp = { apply: applyAlerts, render: render, state: state, chart: chart, draw: renderChart };
   loadPrice(); loadAlerts(); loadHistory();
+  loadSinaMinute().then(function (rows) {
+    var parsed = parseMinute(rows);
+    if (parsed.length >= 5) { state.minute = parsed; if (chart.mode === "live") renderChart(); }
+  });
   loadSinaDaily().then(function (rows) {
     if (rows && rows.length) { state.dailyAll = rows; renderChart(); }
   });
