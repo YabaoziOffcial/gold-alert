@@ -16,8 +16,8 @@
     --text:#F4F2EC; --muted:#A6A29A; --faint:#8C8780;
     --gold:#E5B455; --gold-dim:rgba(229,180,85,.14);
     --rise:#FF5D5D; --fall:#33C97B;
-    --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px;
-    --r-sm:10px; --r-md:16px; --r-lg:22px; --r-xl:28px;
+    --s1:8px; --s2:16px; --s3:24px;
+    --r-md:14px; --r-lg:20px; --r-xl:26px;
     --shadow:0 12px 32px rgba(0,0,0,.45);
     --ease:cubic-bezier(.2,.7,.3,1);
   }
@@ -26,113 +26,120 @@
   body{
     background:radial-gradient(1200px 600px at 50% -10%, rgba(229,180,85,.10), transparent 60%), var(--bg);
     color:var(--text);
-    font:400 16px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Segoe UI",Roboto,sans-serif;
+    font:400 15px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Segoe UI",Roboto,sans-serif;
     min-height:100vh;
-    padding:calc(env(safe-area-inset-top) + 20px) var(--s2) calc(env(safe-area-inset-bottom) + 140px);
+    padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 130px);
     -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:460px;margin:0 auto}
+  .wrap{max-width:480px;margin:0 auto}
   .num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
 
-  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--s2)}
-  .brand{display:flex;align-items:center;gap:12px}
-  .mark{width:36px;height:36px;border-radius:12px;display:grid;place-items:center;
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .mark{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;
     background:linear-gradient(145deg,#F0C46A,#B8842F);box-shadow:0 6px 18px rgba(229,180,85,.25)}
-  .mark svg{width:20px;height:20px}
-  h1{font-size:18px;font-weight:600;letter-spacing:.2px;margin:0}
-  .sub{font-size:12px;color:var(--faint);margin-top:2px;letter-spacing:.4px}
-  .icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);
+  .mark svg{width:18px;height:18px}
+  h1{font-size:16.5px;font-weight:600;letter-spacing:.2px;margin:0}
+  .sub{font-size:11px;color:var(--faint);margin-top:1px}
+  .icon-btn{width:38px;height:38px;border-radius:11px;border:1px solid var(--line);
     background:var(--surface);color:var(--muted);display:grid;place-items:center;
-    transition:background .2s var(--ease),transform .12s var(--ease),border-color .2s}
-  .icon-btn:active{transform:scale(.96);background:var(--surface-2)}
-  .icon-btn svg{width:19px;height:19px}
+    transition:background .2s var(--ease),transform .12s var(--ease)}
+  .icon-btn:active{transform:scale(.96)}
+  .icon-btn svg{width:18px;height:18px}
 
-  /* chart card */
   .chart-card{background:linear-gradient(160deg,#1B1A18,#121116 60%);border:1px solid var(--line);
-    border-radius:var(--r-xl);padding:18px 18px 12px;box-shadow:var(--shadow);margin-bottom:var(--s2);
+    border-radius:var(--r-xl);padding:14px 14px 10px;box-shadow:var(--shadow);margin-bottom:12px;
     position:relative;overflow:hidden}
-  .chart-card:before{content:"";position:absolute;inset:-60% -10% auto auto;width:220px;height:220px;
-    background:radial-gradient(circle,rgba(229,180,85,.14),transparent 70%);pointer-events:none}
-  .chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-  .label{font-size:12px;letter-spacing:.6px;color:var(--faint);text-transform:uppercase}
-  .price{font-size:40px;line-height:1.05;font-weight:640;letter-spacing:-1px;margin-top:6px}
-  .price small{font-size:14px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:2px}
-  .chip{font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:999px;
-    background:var(--gold-dim);color:var(--gold);white-space:nowrap;margin-top:4px}
-  .chip.neg{background:rgba(255,93,93,.12);color:var(--rise)}
-  .chip.pos{background:rgba(51,201,123,.12);color:var(--fall)}
-  .chart{display:block;width:100%;height:132px;margin-top:10px;overflow:visible}
-  .chart-foot{display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-top:2px}
+  .chart-head{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+  .label{font-size:10.5px;letter-spacing:.6px;color:var(--faint);text-transform:uppercase}
+  .price{font-size:34px;line-height:1.05;font-weight:640;letter-spacing:-.8px;margin-top:3px}
+  .price small{font-size:12.5px;font-weight:500;color:var(--muted);letter-spacing:0;margin-left:2px}
+  .chart-tools{display:flex;gap:6px}
+  .tool-btn{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.03);
+    color:var(--muted);font-size:16px;line-height:1;display:grid;place-items:center}
+  .tool-btn:active{background:var(--surface-2);color:var(--text)}
+  .tool-btn[hidden]{display:none}
 
-  /* segmented */
+  .tabs{display:flex;gap:4px;margin:10px 0 2px}
+  .tab{flex:1;height:26px;border-radius:8px;border:none;background:transparent;color:var(--faint);
+    font-size:11.5px;font-weight:500;transition:.2s var(--ease)}
+  .tab.active{background:rgba(229,180,85,.14);color:var(--gold)}
+
+  .chart-wrap{position:relative;margin-top:6px;touch-action:none}
+  .chart{display:block;width:100%;height:138px;overflow:visible}
+  .tooltip{position:absolute;top:2px;transform:translateX(-50%);background:#24242C;border:1px solid var(--line);
+    border-radius:9px;padding:5px 8px;font-size:10.5px;line-height:1.35;color:var(--text);
+    white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+  .tooltip[hidden]{display:none}
+  .tooltip b{font-weight:600}
+  .tooltip .t2{color:var(--muted)}
+  .chart-foot{display:flex;justify-content:space-between;font-size:10.5px;color:var(--faint);margin-top:4px}
+
   .seg{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);
-    border-radius:14px;padding:4px;margin-bottom:var(--s3)}
-  .seg-btn{flex:1;height:38px;border:none;border-radius:10px;background:transparent;color:var(--muted);
-    font-size:14px;font-weight:500;transition:.2s var(--ease)}
+    border-radius:12px;padding:3px;margin-bottom:12px}
+  .seg-btn{flex:1;height:34px;border:none;border-radius:9px;background:transparent;color:var(--muted);
+    font-size:13px;font-weight:500;transition:.2s var(--ease)}
   .seg-btn.active{background:var(--surface-2);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.35)}
 
-  .section{margin-bottom:var(--s3)}
-  .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 4px}
-  .sec-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;letter-spacing:.3px}
-  .tag{font-size:11px;padding:2px 7px;border-radius:6px;background:var(--surface-2);color:var(--faint);font-weight:500}
-  .dir{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:12px;font-weight:700}
+  .section{margin-bottom:14px}
+  .sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:0 2px}
+  .sec-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;letter-spacing:.2px}
+  .tag{font-size:10px;padding:1px 6px;border-radius:5px;background:var(--surface-2);color:var(--faint);font-weight:500}
+  .dir{width:20px;height:20px;border-radius:6px;display:grid;place-items:center;font-size:11px;font-weight:700}
   .dir.up{background:rgba(255,93,93,.14);color:var(--rise)}
   .dir.down{background:rgba(51,201,123,.14);color:var(--fall)}
 
-  .rows{display:flex;flex-direction:column;gap:8px}
-  .row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
-    border-radius:var(--r-md);padding:14px var(--s2);transition:border-color .2s,transform .12s var(--ease)}
-  .row:active{transform:scale(.995)}
-  .row .val{font-size:20px;font-weight:600;letter-spacing:-.3px}
-  .row .unit{font-size:12px;color:var(--faint);margin-left:4px;font-weight:400;letter-spacing:0}
-  .grow{flex:1;min-width:0}
-  .delta{font-size:12px;color:var(--muted);margin-top:2px}
-  .delta.warn{color:var(--gold)}
-  .del{width:40px;height:40px;border-radius:12px;border:1px solid transparent;background:transparent;
-    color:#8F8A82;display:grid;place-items:center;transition:.18s var(--ease)}
+  .rows{display:flex;flex-direction:column;gap:6px}
+  .row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);
+    border-radius:var(--r-md);padding:10px 14px}
+  .val{font-size:17px;font-weight:600;letter-spacing:-.2px}
+  .unit{font-size:10.5px;color:var(--faint);margin-left:3px;font-weight:400;letter-spacing:0}
+  .grow{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .delta{font-size:10.5px;color:var(--muted)}
+  .delta.pos{color:var(--rise)}
+  .delta.neg{color:var(--fall)}
+  .delta small{opacity:.65;margin-left:4px}
+  .del{width:34px;height:34px;border-radius:10px;border:1px solid transparent;background:transparent;
+    color:#8F8A82;display:grid;place-items:center}
   .del:active{background:rgba(255,93,93,.12);color:var(--rise)}
-  .del svg{width:17px;height:17px}
+  .del svg{width:15px;height:15px}
   .empty{border:1px dashed rgba(255,255,255,.12);border-radius:var(--r-md);
-    padding:20px var(--s2);text-align:center;color:var(--faint);font-size:13px}
+    padding:14px;text-align:center;color:var(--faint);font-size:12px}
 
-  .add{display:flex;gap:8px;margin-top:8px}
+  .add{display:flex;gap:6px;margin-top:6px}
   .add input{flex:1;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
-    padding:13px var(--s2);color:var(--text);font-size:16px;font-variant-numeric:tabular-nums;
-    outline:none;transition:border-color .2s,background .2s;min-height:50px}
+    padding:10px 12px;color:var(--text);font-size:15px;font-variant-numeric:tabular-nums;outline:none;min-height:42px}
   .add input::placeholder{color:#5E5A55}
   .add input:focus{border-color:rgba(229,180,85,.5);background:var(--surface-2)}
-  .add button{width:52px;border-radius:var(--r-md);border:1px solid rgba(229,180,85,.35);
-    background:var(--gold-dim);color:var(--gold);font-size:22px;font-weight:300;line-height:1;
-    transition:transform .12s var(--ease),background .2s}
-  .add button:active{transform:scale(.95);background:rgba(229,180,85,.24)}
+  .add button{width:46px;border-radius:var(--r-md);border:1px solid rgba(229,180,85,.35);
+    background:var(--gold-dim);color:var(--gold);font-size:20px;font-weight:300;line-height:1}
+  .add button:active{background:rgba(229,180,85,.24)}
 
-  /* recent alerts */
   .recent-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
-    padding:16px 16px 6px;margin-bottom:var(--s2)}
-  .recent-card .sec-head{padding:0;margin-bottom:8px}
-  .alert-item{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line);font-size:13px}
+    padding:12px 14px 4px;margin-bottom:10px}
+  .recent-card .sec-head{padding:0;margin-bottom:4px}
+  .alert-item{display:flex;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:12px}
   .alert-item:first-child{border-top:none}
-  .alert-time{color:var(--faint);font-size:12px;white-space:nowrap;padding-top:2px}
-  .alert-text{color:var(--text);line-height:1.45}
+  .alert-time{color:var(--faint);font-size:10.5px;white-space:nowrap;padding-top:2px}
+  .alert-text{color:var(--text);line-height:1.4}
 
-  .savebar{position:fixed;left:0;right:0;bottom:0;padding:12px var(--s2) calc(env(safe-area-inset-bottom) + 14px);
+  .savebar{position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(env(safe-area-inset-bottom) + 12px);
     background:linear-gradient(to top,rgba(10,10,12,.98) 40%,rgba(10,10,12,0));
     display:flex;justify-content:center;z-index:20;
     transition:transform .3s var(--ease),opacity .25s var(--ease)}
   .savebar.hidden{transform:translateY(120%);opacity:0;pointer-events:none}
-  .save{max-width:460px;width:100%;height:52px;border:none;border-radius:16px;font-size:16px;font-weight:600;
+  .save{max-width:480px;width:100%;height:48px;border:none;border-radius:15px;font-size:15px;font-weight:600;
     color:#1A1408;background:linear-gradient(135deg,#F2C972,#D9A23F);box-shadow:0 10px 26px rgba(229,180,85,.28);
-    display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .12s var(--ease)}
-  .save:active{transform:scale(.985)}
-  .save[disabled]{background:transparent;border:1px solid var(--line);color:var(--muted);
-    box-shadow:none;font-weight:500;font-size:14.5px}
-  .save .spin{width:16px;height:16px;border:2px solid rgba(0,0,0,.25);border-top-color:#1A1408;
+    display:flex;align-items:center;justify-content:center;gap:8px}
+  .save[disabled]{background:transparent;border:1px solid var(--line);color:var(--muted);box-shadow:none;
+    font-weight:500;font-size:13.5px}
+  .save .spin{width:15px;height:15px;border:2px solid rgba(0,0,0,.25);border-top-color:#1A1408;
     border-radius:50%;animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 84px);transform:translate(-50%,12px);
-    background:#23232B;color:var(--text);border:1px solid var(--line);border-radius:12px;
-    padding:10px 16px;font-size:13.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);
+  .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 76px);transform:translate(-50%,12px);
+    background:#23232B;color:var(--text);border:1px solid var(--line);border-radius:11px;
+    padding:9px 14px;font-size:12.5px;box-shadow:0 10px 30px rgba(0,0,0,.5);
     opacity:0;pointer-events:none;transition:.24s var(--ease);z-index:40;max-width:86vw;text-align:center}
   .toast.show{opacity:1;transform:translate(-50%,0)}
   .toast.err{border-color:rgba(255,93,93,.4);color:#FFD7D7}
@@ -140,32 +147,34 @@
   .scrim{position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(6px);
     opacity:0;pointer-events:none;transition:.25s;z-index:50}
   .scrim.show{opacity:1;pointer-events:auto}
-  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#141419;border-radius:26px 26px 0 0;
-    border-top:1px solid var(--line);padding:10px var(--s2) calc(env(safe-area-inset-bottom) + 24px);
-    transform:translateY(102%);transition:transform .32s var(--ease);max-height:88vh;overflow:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#141419;border-radius:24px 24px 0 0;
+    border-top:1px solid var(--line);padding:10px 16px calc(env(safe-area-inset-bottom) + 22px);
+    transform:translateY(102%);transition:transform .32s var(--ease);max-height:90vh;overflow:auto}
   .sheet.show{transform:translateY(0)}
-  .grab{width:38px;height:4px;border-radius:2px;background:#33333C;margin:6px auto 16px}
-  .sheet h2{font-size:17px;margin:0 0 4px;font-weight:600}
-  .sheet p{font-size:12.5px;color:var(--muted);margin:0 0 14px;line-height:1.55}
-  .field label{display:block;font-size:12px;color:var(--faint);margin:14px 0 6px;letter-spacing:.3px}
+  .grab{width:36px;height:4px;border-radius:2px;background:#33333C;margin:6px auto 14px}
+  .sheet h2{font-size:16px;margin:0 0 3px;font-weight:600}
+  .sheet p{font-size:12px;color:var(--muted);margin:0 0 12px;line-height:1.5}
+  .field label{display:block;font-size:11px;color:var(--faint);margin:12px 0 5px;letter-spacing:.3px}
   .field input,.field select{width:100%;background:var(--surface);border:1px solid var(--line);
-    border-radius:12px;padding:13px 14px;color:var(--text);font-size:14.5px;outline:none;min-height:48px;
-    appearance:none}
+    border-radius:11px;padding:11px 12px;color:var(--text);font-size:14px;outline:none;min-height:44px;appearance:none}
   .field input:focus,.field select:focus{border-color:rgba(229,180,85,.5)}
-  .row2{display:flex;gap:10px}
+  .row2{display:flex;gap:8px}
   .row2 > div{flex:1}
-  .sheet-actions{display:flex;gap:10px;margin-top:20px}
-  .sheet-actions button{flex:1;height:46px;border-radius:13px;border:1px solid var(--line);
-    background:var(--surface);color:var(--text);font-size:15px;font-weight:500}
+  .sheet-actions{display:flex;gap:8px;margin-top:16px}
+  .sheet-actions button{flex:1;height:44px;border-radius:12px;border:1px solid var(--line);
+    background:var(--surface);color:var(--text);font-size:14px;font-weight:500}
   .sheet-actions .primary{background:linear-gradient(135deg,#F2C972,#D9A23F);color:#1A1408;border:none;font-weight:600}
-  .hint{font-size:11.5px;color:var(--faint);margin-top:10px;line-height:1.55}
-  .banner{margin:0 0 var(--s2);display:flex;align-items:center;gap:10px;
+  .ghost{width:100%;height:44px;margin-top:14px;border-radius:12px;border:1px dashed rgba(229,180,85,.4);
+    background:rgba(229,180,85,.06);color:var(--gold);font-size:13.5px;font-weight:500}
+  .ghost:active{background:rgba(229,180,85,.14)}
+  .hint{font-size:11px;color:var(--faint);margin-top:8px;line-height:1.5}
+  .banner{margin-bottom:10px;display:flex;align-items:center;gap:8px;
     background:rgba(255,93,93,.10);border:1px solid rgba(255,93,93,.28);color:#FFC9C9;
-    border-radius:12px;padding:10px 12px;font-size:12.5px}
+    border-radius:11px;padding:9px 11px;font-size:12px}
   .banner[hidden]{display:none}
   .banner span{flex:1}
   .banner button{background:transparent;border:1px solid rgba(255,255,255,.18);color:#FFD7D7;
-    border-radius:8px;padding:5px 10px;font-size:12px}
+    border-radius:7px;padding:4px 9px;font-size:11.5px}
   @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 </style>
 </head>
@@ -201,12 +210,27 @@
         <div class="label">国际金价 · XAU/USD</div>
         <div class="price num" id="price">—<small>/oz</small></div>
       </div>
-      <div class="chip" id="chg" hidden></div>
+      <div class="chart-tools">
+        <button class="tool-btn" id="panLeft" hidden aria-label="左移">‹</button>
+        <button class="tool-btn" id="panRight" hidden aria-label="右移">›</button>
+        <button class="tool-btn" id="zoomOut" aria-label="缩小">−</button>
+        <button class="tool-btn" id="zoomIn" aria-label="放大">＋</button>
+      </div>
     </div>
-    <svg class="chart" id="chart" viewBox="0 0 320 120" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+    <div class="tabs" id="rangeTabs">
+      <button class="tab active" data-mode="live">实时 24h</button>
+      <button class="tab" data-mode="day">日</button>
+      <button class="tab" data-mode="month">月</button>
+    </div>
+
+    <div class="chart-wrap" id="chartWrap">
+      <svg class="chart" id="chart" viewBox="0 0 320 140" preserveAspectRatio="none"></svg>
+      <div class="tooltip" id="tooltip" hidden></div>
+    </div>
     <div class="chart-foot">
       <span id="rangeLow">—</span>
-      <span id="chartHint">近 24 小时</span>
+      <span id="chartHint">等待数据…</span>
       <span id="rangeHigh">—</span>
     </div>
   </section>
@@ -247,7 +271,7 @@
   </section>
 </div>
 
-<div class="savebar">
+<div class="savebar hidden">
   <button class="save" id="btnSave" disabled><span id="saveLabel">已与云端同步</span></button>
 </div>
 
@@ -268,7 +292,7 @@
     <input id="repoInput" autocomplete="off" spellcheck="false">
   </div>
 
-  <label style="display:block;font-size:12px;color:var(--faint);margin:22px 0 6px;letter-spacing:.3px">提醒时间段</label>
+  <label style="display:block;font-size:11px;color:var(--faint);margin:14px 0 5px;letter-spacing:.3px">提醒时间段</label>
   <div class="row2">
     <div class="field"><input id="startInput" type="time" value="09:00"></div>
     <div class="field"><input id="endInput" type="time" value="23:50"></div>
@@ -285,6 +309,8 @@
     </select>
   </div>
 
+  <button class="ghost" id="btnTestPush">🔔 发送测试通知</button>
+
   <div class="hint" id="statusHint"></div>
   <div class="sheet-actions">
     <button id="btnCancel">取消</button>
@@ -292,7 +318,6 @@
   </div>
   <div class="hint">
     Token 权限：fine-grained 勾 <b>Contents: Read and write</b>；classic 勾 <b>repo</b>。
-    设置保存后会一并写入云端，下一次检查（≤10 分钟）生效。
   </div>
 </div>
 
@@ -306,7 +331,6 @@
   var NTFY_TOPIC = "gold-alert-sd-7f3k9x2q";
   var LS = { token: "gold_alert_token_v1", repo: "gold_alert_repo_v1" };
   var UNITS = { intl: "USD/oz", cmbc: "元/克" };
-  var NAMES = { intl: "国际金价", cmbc: "民生积存金" };
 
   var state = {
     intl: { above: [], below: [] },
@@ -315,15 +339,18 @@
     market: "intl",
     dirty: false,
     price: { intl: null, cmbc: null },
-    history: [],
+    history: { points: [], daily: [] },
     alerts: []
   };
+
+  var chart = { mode: "live", zoom: 1, center: null, viewStart: 0, viewEnd: 0, hoverTs: null, data: [] };
 
   function $(id) { return document.getElementById(id); }
   function token() { return localStorage.getItem(LS.token) || ""; }
   function repo() { return localStorage.getItem(LS.repo) || DEFAULT_REPO; }
   function apiUrl(path) { return "https://api.github.com/repos/" + repo() + "/contents/" + path; }
   function fmt(n) { return Number(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function pad2(n) { return ("0" + n).slice(-2); }
 
   var toastTimer;
   function toast(msg, isErr) {
@@ -345,7 +372,6 @@
     return new TextDecoder().decode(bytes);
   }
 
-  /* ---------- 读取 ---------- */
   function applyAlerts(data) {
     ["intl", "cmbc"].forEach(function (m) {
       state[m] = { above: [], below: [] };
@@ -371,26 +397,24 @@
     return fetch("./alerts.json?t=" + Date.now(), { cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(applyAlerts)
-      .catch(function (err) {
+      .catch(function () {
         var headers = { "Accept": "application/vnd.github+json" };
         if (token()) headers.Authorization = "Bearer " + token();
         return fetch(apiUrl(PATH) + "?ref=" + BRANCH, { headers: headers, cache: "no-store" })
           .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
           .then(function (j) { applyAlerts(JSON.parse(b64decode(j.content))); });
       })
-      .catch(function (err) {
+      .catch(function (e) {
         $("banner").hidden = false;
         $("bannerText").textContent = "无法读取云端配置，请检查网络后重试";
-        toast("读取失败：" + err.message, true);
+        toast("读取失败：" + e.message, true);
       });
   }
 
   function loadPrice() {
     fetch("https://api.gold-api.com/price/XAU", { cache: "no-store" })
       .then(function (r) { return r.json(); })
-      .then(function (d) {
-        if (d && d.price) { state.price.intl = Number(d.price); render(); }
-      })
+      .then(function (d) { if (d && d.price) { state.price.intl = Number(d.price); render(); } })
       .catch(function () {});
 
     fetch("https://ntfy.sh/" + NTFY_TOPIC + "/json?poll=1&since=24h", { cache: "no-store" })
@@ -398,8 +422,7 @@
       .then(function (txt) {
         var lines = txt.trim().split("\n").filter(Boolean), cmbc = null, alerts = [];
         for (var i = 0; i < lines.length; i++) {
-          var m;
-          try { m = JSON.parse(lines[i]); } catch (e) { continue; }
+          var m; try { m = JSON.parse(lines[i]); } catch (e) { continue; }
           var body = m.message || "";
           var hit = /民生\s+([\d,]+\.?\d*)\s*元\/克/.exec(body);
           if (hit && cmbc === null) cmbc = Number(hit[1].replace(/,/g, ""));
@@ -418,76 +441,174 @@
     fetch("./history.json?t=" + Date.now(), { cache: "no-store" })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        state.history = (d.points || []).filter(function (p) { return p && p.length === 2; });
-        renderChart();
+        state.history.points = (d.points || []).filter(function (p) { return p && p.length === 2; });
+        state.history.daily = (d.daily || []).filter(function (p) { return p && p.length === 5; });
+        if (!state.history.daily.length) state.history.daily = buildDaily(state.history.points);
+        resetView();
       })
       .catch(function () { renderChart(); });
   }
 
-  /* ---------- 图表 ---------- */
-  function renderChart() {
-    var svg = $("chart");
-    var now = Date.now() / 1000;
-    var pts = state.history.filter(function (p) { return p[0] >= now - 86400; });
-    if (pts.length < 2) {
-      svg.innerHTML = '<text x="160" y="64" text-anchor="middle" fill="#6E6A64" font-size="12">历史数据收集中…</text>';
-      $("rangeLow").textContent = "—";
-      $("rangeHigh").textContent = "—";
-      $("chartHint").textContent = "近 24 小时";
-      return;
-    }
-    var vals = pts.map(function (p) { return p[1]; });
-    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
-    var span = (max - min) || 1;
-    var W = 320, H = 120, PAD = 6;
-    var n = pts.length;
-    var xs = [], ys = [];
-    for (var i = 0; i < n; i++) {
-      xs.push(PAD + i * (W - 2 * PAD) / (n - 1));
-      ys.push(H - PAD - (vals[i] - min) / span * (H - 2 * PAD));
-    }
-    var line = "";
-    for (var j = 0; j < n; j++) line += (j ? "L" : "M") + xs[j].toFixed(1) + " " + ys[j].toFixed(1);
-    var area = line + " L" + xs[n - 1].toFixed(1) + " " + (H - PAD) + " L" + xs[0].toFixed(1) + " " + (H - PAD) + " Z";
-    svg.innerHTML =
-      '<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0%" stop-color="#E5B455" stop-opacity=".34"/>' +
-      '<stop offset="100%" stop-color="#E5B455" stop-opacity="0"/></linearGradient>' +
-      '<linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">' +
-      '<stop offset="0%" stop-color="#B8842F"/><stop offset="100%" stop-color="#F2C972"/></linearGradient></defs>' +
-      '<path d="' + area + '" fill="url(#areaGrad)"/>' +
-      '<path d="' + line + '" fill="none" stroke="url(#lineGrad)" stroke-width="2.2" ' +
-      'stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
-      '<circle cx="' + xs[n - 1].toFixed(1) + '" cy="' + ys[n - 1].toFixed(1) +
-      '" r="3" fill="#F2C972" stroke="#141419" stroke-width="2"/>';
-    $("rangeLow").textContent = "低 " + fmt(min);
-    $("rangeHigh").textContent = "高 " + fmt(max);
-    $("chartHint").textContent = "近 24 小时 · " + pts.length + " 个点";
-
-    var first = vals[0], last = vals[n - 1], diff = (last - first) / first * 100;
-    var chip = $("chg");
-    chip.hidden = false;
-    chip.textContent = (diff >= 0 ? "+" : "") + diff.toFixed(2) + "%";
-    chip.className = "chip " + (diff > 0.001 ? "pos" : (diff < -0.001 ? "neg" : ""));
+  function buildDaily(points) {
+    var map = {}, tz = 8 * 3600;
+    points.forEach(function (p) {
+      var day = Math.floor((p[0] + tz) / 86400) * 86400 - tz;
+      var row = map[day];
+      if (!row) map[day] = [day, p[1], p[1], p[1], p[1]];
+      else { row[2] = p[1]; row[3] = Math.max(row[3], p[1]); row[4] = Math.min(row[4], p[1]); }
+    });
+    return Object.keys(map).map(function (k) { return map[k]; }).sort(function (a, b) { return a[0] - b[0]; });
   }
 
-  /* ---------- 渲染 ---------- */
-  function rowHtml(price, market, dir) {
-    var unit = UNITS[market];
-    var cur = state.price[market];
-    var diffTxt = "", crossed = false;
-    if (cur) {
-      var d = (price - cur) / cur * 100;
-      diffTxt = "距现价 " + (d >= 0 ? "+" : "") + d.toFixed(2) + "%";
-      crossed = dir === "above" ? cur >= price : cur <= price;
-      if (crossed) diffTxt += " · 已越界";
+  function seriesFor(mode) {
+    var now = Math.floor(Date.now() / 1000);
+    if (mode === "month") return state.history.daily.map(function (d) { return [d[0], d[2]]; });
+    var pts = state.history.points;
+    if (mode === "live") {
+      var cut = now - 86400;
+      var sub = pts.filter(function (p) { return p[0] >= cut; });
+      return sub.length >= 2 ? sub : pts.slice(-Math.min(pts.length, 144));
     }
-    return '<div class="row" data-price="' + price + '" data-dir="' + dir + '">' +
-      '<div class="grow"><div class="val num">' + fmt(price) + '<span class="unit">' + unit + '</span></div>' +
-      '<div class="delta' + (crossed ? " warn" : "") + '">' + diffTxt + '</div></div>' +
-      '<button class="del" aria-label="删除">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">' +
-      '<path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg></button></div>';
+    return pts;
+  }
+
+  function resetView() {
+    chart.zoom = 1;
+    chart.center = null;
+    chart.hoverTs = null;
+    renderChart();
+  }
+
+  function viewRange(data) {
+    if (!data.length) return [0, 0];
+    var fullStart = data[0][0], fullEnd = data[data.length - 1][0];
+    if (fullEnd <= fullStart) fullEnd = fullStart + 3600;
+    var span = (fullEnd - fullStart) / chart.zoom;
+    var center = chart.center == null ? (fullStart + fullEnd) / 2 : chart.center;
+    var s = center - span / 2, e = center + span / 2;
+    if (s < fullStart) { s = fullStart; e = fullStart + span; }
+    if (e > fullEnd) { e = fullEnd; s = fullEnd - span; }
+    return [s, e];
+  }
+
+  function renderChart() {
+    chart.data = seriesFor(chart.mode);
+    var svg = $("chart");
+    var data = chart.data;
+    var range = viewRange(data);
+    chart.viewStart = range[0]; chart.viewEnd = range[1];
+    var zoomed = chart.zoom > 1.01;
+    $("panLeft").hidden = !zoomed;
+    $("panRight").hidden = !zoomed;
+
+    if (data.length < 2) {
+      svg.innerHTML = '<text x="160" y="70" text-anchor="middle" fill="#6E6A64" font-size="11">历史数据收集中…</text>';
+      $("rangeLow").textContent = "—"; $("rangeHigh").textContent = "—";
+      $("chartHint").textContent = chart.mode === "month" ? "月线数据收集中" : "近 24 小时";
+      $("tooltip").hidden = true;
+      return;
+    }
+
+    var W = 320, H = 140, PAD = 8;
+    var vp = data.filter(function (p) { return p[0] >= chart.viewStart && p[0] <= chart.viewEnd; });
+    if (vp.length < 2) vp = data.slice(-2);
+    var vals = vp.map(function (p) { return p[1]; });
+    var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
+    var span = (max - min) || 1;
+    var x = function (t) { return PAD + (t - chart.viewStart) / ((chart.viewEnd - chart.viewStart) || 1) * (W - 2 * PAD); };
+    var y = function (v) { return H - PAD - (v - min) / span * (H - 2 * PAD); };
+
+    var line = "";
+    for (var i = 0; i < vp.length; i++) line += (i ? "L" : "M") + x(vp[i][0]).toFixed(1) + " " + y(vp[i][1]).toFixed(1);
+    var area = line + " L" + x(vp[vp.length - 1][0]).toFixed(1) + " " + (H - PAD) +
+      " L" + x(vp[0][0]).toFixed(1) + " " + (H - PAD) + " Z";
+
+    var cross = "";
+    if (chart.hoverTs) {
+      var hp = nearest(vp, chart.hoverTs);
+      if (hp) {
+        cross = '<line x1="' + x(hp[0]).toFixed(1) + '" y1="4" x2="' + x(hp[0]).toFixed(1) +
+          '" y2="' + (H - PAD) + '" stroke="rgba(229,180,85,.45)" stroke-width="1" stroke-dasharray="3 3"/>' +
+          '<circle cx="' + x(hp[0]).toFixed(1) + '" cy="' + y(hp[1]).toFixed(1) +
+          '" r="3.4" fill="#F2C972" stroke="#141419" stroke-width="1.6"/>';
+      }
+    }
+
+    svg.innerHTML =
+      '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#E5B455" stop-opacity=".32"/><stop offset="100%" stop-color="#E5B455" stop-opacity="0"/></linearGradient>' +
+      '<linearGradient id="lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B8842F"/><stop offset="100%" stop-color="#F2C972"/></linearGradient></defs>' +
+      '<path d="' + area + '" fill="url(#ag)"/>' +
+      '<path d="' + line + '" fill="none" stroke="url(#lg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' + cross;
+
+    $("rangeLow").textContent = "低 " + fmt(min);
+    $("rangeHigh").textContent = "高 " + fmt(max);
+    $("chartHint").textContent = labelForMode() + " · " + vp.length + " 点";
+
+    if (chart.hoverTs) {
+      var pt = nearest(vp, chart.hoverTs);
+      if (pt) showTooltip(pt, vp[0][1], x, W);
+    } else {
+      $("tooltip").hidden = true;
+    }
+  }
+
+  function nearest(arr, ts) {
+    var best = null, d = Infinity;
+    for (var i = 0; i < arr.length; i++) {
+      var dd = Math.abs(arr[i][0] - ts);
+      if (dd < d) { d = dd; best = arr[i]; }
+    }
+    return best;
+  }
+
+  function labelForMode() {
+    return chart.mode === "live" ? "24 小时" : (chart.mode === "day" ? "7 天" : "月度");
+  }
+
+  function showTooltip(pt, base, xFn, W) {
+    var tip = $("tooltip");
+    var d = new Date(pt[0] * 1000);
+    var tstr = chart.mode === "month"
+      ? (d.getMonth() + 1) + "月" + d.getDate() + "日"
+      : (d.getMonth() + 1) + "/" + d.getDate() + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+    var diff = base ? ((pt[1] - base) / base * 100) : null;
+    tip.innerHTML = '<b class="num">' + fmt(pt[1]) + '</b> <span class="t2">' + tstr + '</span>' +
+      (diff === null ? "" : '<br><span class="t2">较区间起点 ' + (diff >= 0 ? "+" : "") + diff.toFixed(2) + '%</span>');
+    var left = Math.min(Math.max(xFn(pt[0]), 46), W - 46);
+    tip.style.left = (left / W * 100) + "%";
+    tip.hidden = false;
+  }
+
+  function setZoom(factor, anchorTs) {
+    var data = chart.data;
+    if (!data.length) return;
+    var fullStart = data[0][0], fullEnd = data[data.length - 1][0];
+    var fullSpan = Math.max(fullEnd - fullStart, 600);
+    var curSpan = (chart.viewEnd - chart.viewStart) || fullSpan;
+    var newSpan = Math.min(Math.max(curSpan * factor, 600), fullSpan);
+    chart.zoom = fullSpan / newSpan;
+    chart.center = anchorTs != null ? anchorTs : (chart.viewStart + chart.viewEnd) / 2;
+    chart.center = Math.min(Math.max(chart.center, fullStart + newSpan / 2), fullEnd - newSpan / 2);
+    renderChart();
+  }
+
+  function panBy(dir) {
+    var span = chart.viewEnd - chart.viewStart;
+    chart.center = (chart.viewStart + chart.viewEnd) / 2 + dir * span * 0.3;
+    renderChart();
+  }
+
+  function chartTsFromEvent(ev) {
+    var rect = $("chartWrap").getBoundingClientRect();
+    var ratio = (ev.clientX - rect.left) / rect.width;
+    return chart.viewStart + ratio * (chart.viewEnd - chart.viewStart);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
   }
 
   function render() {
@@ -503,26 +624,21 @@
     $("aboveInput").placeholder = "输入价位，如 " + (m === "intl" ? "4250" : "900");
     $("belowInput").placeholder = "输入价位，如 " + (m === "intl" ? "4100" : "880");
 
-    if (state.price.intl) {
-      $("price").innerHTML = fmt(state.price.intl) + "<small>/oz</small>";
-    }
-    var iv = state.config.interval_minutes;
-    $("sourceLine").textContent = "每 " + iv + " 分钟检查 · " +
+    if (state.price.intl) $("price").innerHTML = fmt(state.price.intl) + "<small>/oz</small>";
+    $("sourceLine").textContent = "每 " + state.config.interval_minutes + " 分钟 · " +
       state.config.window_start + "–" + state.config.window_end +
       (state.dirty ? " · 未保存" : " · 已同步");
 
     $("recentList").innerHTML = state.alerts.length
       ? state.alerts.slice(0, 3).map(function (a) {
           var d = new Date(a.time * 1000);
-          var hh = ("0" + d.getHours()).slice(-2), mm = ("0" + d.getMinutes()).slice(-2);
-          return '<div class="alert-item"><div class="alert-time">' + hh + ":" + mm +
+          return '<div class="alert-item"><div class="alert-time">' + pad2(d.getHours()) + ":" + pad2(d.getMinutes()) +
             '</div><div class="alert-text">' + escapeHtml(a.message || a.title) + '</div></div>';
         }).join("")
       : '<div class="alert-item"><div class="alert-text" style="color:var(--faint)">暂无预警记录</div></div>';
     $("alertCount").textContent = state.alerts.length;
 
-    var btn = $("btnSave");
-    btn.disabled = !state.dirty;
+    $("btnSave").disabled = !state.dirty;
     $("saveLabel").textContent = state.dirty ? "保存到云端" : "已与云端同步";
     document.querySelector(".savebar").classList.toggle("hidden", !state.dirty);
 
@@ -531,13 +647,24 @@
     });
   }
 
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-    });
+  function rowHtml(price, market, dir) {
+    var cur = state.price[market];
+    var cls = "", txt = "";
+    if (cur) {
+      var d = (price - cur) / cur * 100;
+      cls = d > 0 ? " pos" : (d < 0 ? " neg" : "");
+      txt = (d >= 0 ? "+" : "") + d.toFixed(2) + "%";
+      var crossed = dir === "above" ? cur >= price : cur <= price;
+      txt += crossed ? '<small>已越界</small>' : "";
+    }
+    return '<div class="row" data-price="' + price + '" data-dir="' + dir + '">' +
+      '<div class="grow"><span class="val num">' + fmt(price) + '<span class="unit">' + UNITS[market] + '</span></span>' +
+      (txt ? '<span class="delta' + cls + '">' + txt + '</span>' : "") + '</div>' +
+      '<button class="del" aria-label="删除">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">' +
+      '<path d="M4 7h16M9 7V5h6v2m-8 0 1 13h8l1-13"/></svg></button></div>';
   }
 
-  /* ---------- 编辑 ---------- */
   function addThreshold(dir, inputId) {
     var input = $(inputId);
     var v = parseFloat(String(input.value).replace(/,/g, ""));
@@ -564,11 +691,8 @@
 
   function buildPayload() {
     function pack(m) {
-      return state[m].above.map(function (p) {
-        return { direction: "above", price: p, note: "涨破 " + p.toFixed(2) };
-      }).concat(state[m].below.map(function (p) {
-        return { direction: "below", price: p, note: "跌破 " + p.toFixed(2) };
-      }));
+      return state[m].above.map(function (p) { return { direction: "above", price: p, note: "涨破 " + p.toFixed(2) }; })
+        .concat(state[m].below.map(function (p) { return { direction: "below", price: p, note: "跌破 " + p.toFixed(2) }; }));
     }
     return { intl: pack("intl"), cmbc: pack("cmbc"), config: state.config };
   }
@@ -599,24 +723,50 @@
   }
 
   function saveAll() {
-    if (!token()) { openSettings(); toast("先配置 Github Token", true); return; }
+    if (!token()) { openSettings(); toast("先配置 Token", true); return; }
     $("btnSave").disabled = true;
     $("saveLabel").innerHTML = '<span class="spin"></span>保存中…';
     var text = JSON.stringify(buildPayload(), null, 2);
     ghPut(PATH, text, "alerts: update via web app")
       .then(function () { return ghPut("docs/alerts.json", text, "alerts: sync page copy"); })
       .then(function () {
-        state.dirty = false;
-        render();
-        toast("已保存，下一次检查（≤10 分钟）生效");
+        state.dirty = false; render();
+        toast("已保存，下一次检查生效");
+      })
+      .catch(function (e) { render(); toast("保存失败：" + e.message, true); });
+  }
+
+  function sendTestPush() {
+    var btn = $("btnTestPush");
+    btn.disabled = true;
+    btn.textContent = "发送中…";
+    var lines = [];
+    if (state.price.intl) lines.push("国际  " + fmt(state.price.intl) + " 美元/盎司");
+    if (state.price.cmbc) lines.push("民生  " + fmt(state.price.cmbc) + " 元/克");
+    var now = new Date();
+    lines.push("测试通知 · " + pad2(now.getHours()) + ":" + pad2(now.getMinutes()));
+    fetch("https://ntfy.sh/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        topic: NTFY_TOPIC,
+        title: "🔔 测试推送 · 金价预警",
+        message: lines.join("\n"),
+        priority: 4,
+        tags: ["test_tube"]
+      })
+    })
+      .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+      .then(function () {
+        toast("已发送，请查看手机通知");
+        btn.disabled = false; btn.textContent = "🔔 发送测试通知";
       })
       .catch(function (e) {
-        render();
-        toast("保存失败：" + e.message, true);
+        toast("发送失败：" + e.message, true);
+        btn.disabled = false; btn.textContent = "🔔 发送测试通知";
       });
   }
 
-  /* ---------- 设置 ---------- */
   function openSettings() {
     $("tokenInput").value = token();
     $("repoInput").value = repo();
@@ -632,7 +782,6 @@
     $("sheet").classList.remove("show");
   }
 
-  /* ---------- 事件 ---------- */
   $("aboveAdd").addEventListener("click", function () { addThreshold("above", "aboveInput"); });
   $("belowAdd").addEventListener("click", function () { addThreshold("below", "belowInput"); });
   $("aboveInput").addEventListener("keydown", function (e) { if (e.key === "Enter") addThreshold("above", "aboveInput"); });
@@ -640,20 +789,67 @@
 
   document.addEventListener("click", function (e) {
     var del = e.target.closest ? e.target.closest(".del") : null;
-    if (del) {
-      var row = del.closest(".row");
-      removeThreshold(row.dataset.dir, parseFloat(row.dataset.price));
+    if (del) { var row = del.closest(".row"); removeThreshold(row.dataset.dir, parseFloat(row.dataset.price)); return; }
+    var seg = e.target.closest ? e.target.closest(".seg-btn") : null;
+    if (seg) { state.market = seg.dataset.market; render(); return; }
+    var tab = e.target.closest ? e.target.closest(".tab") : null;
+    if (tab) {
+      chart.mode = tab.dataset.mode;
+      document.querySelectorAll(".tab").forEach(function (t) { t.classList.toggle("active", t === tab); });
+      resetView();
+    }
+  });
+
+  $("zoomIn").addEventListener("click", function () { setZoom(1 / 1.6); });
+  $("zoomOut").addEventListener("click", function () { setZoom(1.6); });
+  $("panLeft").addEventListener("click", function () { panBy(-1); });
+  $("panRight").addEventListener("click", function () { panBy(1); });
+
+  var pointers = {}, pinchStart = 0, pinchSpan = 0, dragging = false;
+  var wrap = $("chartWrap");
+  wrap.addEventListener("pointerdown", function (e) {
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+    try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
+    var keys = Object.keys(pointers);
+    if (keys.length === 1) { dragging = true; chart.hoverTs = chartTsFromEvent(e); renderChart(); }
+    if (keys.length === 2) {
+      dragging = false;
+      pinchStart = Math.abs(pointers[keys[0]].x - pointers[keys[1]].x) || 1;
+      pinchSpan = chart.viewEnd - chart.viewStart;
+      chart.hoverTs = null;
+      renderChart();
+    }
+  });
+  wrap.addEventListener("pointermove", function (e) {
+    if (!pointers[e.pointerId]) return;
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+    var keys = Object.keys(pointers);
+    if (keys.length >= 2) {
+      var dist = Math.abs(pointers[keys[0]].x - pointers[keys[1]].x) || 1;
+      var factor = pinchStart / dist;
+      var targetSpan = pinchSpan * factor;
+      var data = chart.data;
+      if (data.length) {
+        var fullSpan = Math.max(data[data.length - 1][0] - data[0][0], 600);
+        targetSpan = Math.min(Math.max(targetSpan, 600), fullSpan);
+        chart.zoom = fullSpan / targetSpan;
+        renderChart();
+      }
       return;
     }
-    var seg = e.target.closest ? e.target.closest(".seg-btn") : null;
-    if (seg) { state.market = seg.dataset.market; render(); }
+    if (dragging) { chart.hoverTs = chartTsFromEvent(e); renderChart(); }
   });
+  function endPointer(e) { delete pointers[e.pointerId]; if (!Object.keys(pointers).length) dragging = false; }
+  wrap.addEventListener("pointerup", endPointer);
+  wrap.addEventListener("pointercancel", endPointer);
+  wrap.addEventListener("pointerleave", function () { if (!Object.keys(pointers).length) { chart.hoverTs = null; renderChart(); } });
 
   $("btnSave").addEventListener("click", saveAll);
   $("btnSettings").addEventListener("click", openSettings);
   $("btnCancel").addEventListener("click", closeSettings);
   $("scrim").addEventListener("click", closeSettings);
   $("btnRetry").addEventListener("click", function () { $("banner").hidden = true; loadAlerts(); });
+  $("btnTestPush").addEventListener("click", sendTestPush);
 
   $("btnSaveSettings").addEventListener("click", function () {
     var tk = $("tokenInput").value.trim();
@@ -663,17 +859,13 @@
     state.config.window_end = $("endInput").value || "23:50";
     state.config.interval_minutes = Number($("intervalSelect").value) || 10;
     state.dirty = true;
-    closeSettings();
-    render();
+    closeSettings(); render();
     if (tk) saveAll(); else toast("已保存到本机（未配置 Token）");
   });
 
-  /* ---------- 启动 ---------- */
-  window.__goldApp = { apply: applyAlerts, render: render, state: state, chart: renderChart };
-  loadPrice();
-  loadAlerts();
-  loadHistory();
-  setInterval(function () { loadPrice(); loadHistory(); }, 120000);
+  window.__goldApp = { apply: applyAlerts, render: render, state: state, chart: chart, draw: renderChart };
+  loadPrice(); loadAlerts(); loadHistory();
+  setInterval(function () { loadPrice(); loadHistory(); }, 180000);
 })();
 </script>
 </body>

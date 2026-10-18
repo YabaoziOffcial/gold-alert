@@ -46,7 +46,8 @@ DIGEST_SLOTS = ["09:00", "11:30", "15:00", "20:00"]
 DIGEST_WINDOW_MIN = 12
 DIGEST_MIN_GAP_MIN = 45
 WEEKEND_WINDOW = (9 * 60 + 15, 10 * 60 + 30)
-HISTORY_KEEP_DAYS = 7
+HISTORY_KEEP_DAYS = 7          # 10 分钟级明细保留 7 天
+HISTORY_DAILY_DAYS = 120       # 日线保留 120 天
 HISTORY_POINT_SECONDS = 10 * 60
 
 
@@ -218,23 +219,55 @@ def digest_due(now, state, forced):
 # --------------------------------------------------------------------------- #
 # 历史记录
 # --------------------------------------------------------------------------- #
-def record_history(price, now, commit):
-    data = load_json(HISTORY_FILE, {})
-    points = data.get("points") or []
-    cutoff = int(now.timestamp()) - HISTORY_KEEP_DAYS * 86400
-    points = [p for p in points if isinstance(p, list) and len(p) == 2 and p[0] >= cutoff]
+def record_history(state, price, now, commit):
+    """把 10 分钟价格点暂存到 state，提交时合并进 docs/history.json。"""
     ts = int(now.timestamp() // HISTORY_POINT_SECONDS * HISTORY_POINT_SECONDS)
-    if points and points[-1][0] == ts:
-        points[-1][1] = round(price, 2)
+    cutoff = int(now.timestamp()) - HISTORY_KEEP_DAYS * 86400
+    pending = [p for p in (state.get("pending") or [])
+               if isinstance(p, list) and len(p) == 2 and p[0] >= cutoff]
+    if pending and pending[-1][0] == ts:
+        pending[-1][1] = round(price, 2)
     else:
-        points.append([ts, round(price, 2)])
-    data = {"updated": now.strftime("%Y-%m-%d %H:%M:%S"), "points": points}
-    save_json(HISTORY_FILE, data)
-    if commit:
-        try:
-            git_commit_history(now)
-        except Exception as exc:          # noqa: BLE001
-            print("历史提交失败: %s" % exc, file=sys.stderr)
+        pending.append([ts, round(price, 2)])
+    state["pending"] = pending
+
+    if not commit:
+        return
+
+    data = load_json(HISTORY_FILE, {})
+    points = [p for p in (data.get("points") or [])
+              if isinstance(p, list) and len(p) == 2 and p[0] >= cutoff]
+    known = set(p[0] for p in points)
+    for pt in pending:
+        if pt[0] not in known:
+            points.append(pt)
+            known.add(pt[0])
+    points.sort(key=lambda x: x[0])
+    points = points[-2000:]
+
+    daily = [d for d in (data.get("daily") or [])
+             if isinstance(d, list) and len(d) == 5
+             and d[0] >= int(now.timestamp()) - HISTORY_DAILY_DAYS * 86400]
+    daily_map = {d[0]: d for d in daily}
+
+    for ts_point, price_point in points:
+        day_start = int((ts_point + 8 * 3600) // 86400 * 86400 - 8 * 3600)
+        row = daily_map.get(day_start)
+        if row is None:
+            daily_map[day_start] = [day_start, price_point, price_point, price_point, price_point]
+        else:
+            row[2] = price_point
+            row[3] = max(row[3], price_point)
+            row[4] = min(row[4], price_point)
+    daily = sorted(daily_map.values(), key=lambda x: x[0])
+
+    save_json(HISTORY_FILE, {"updated": now.strftime("%Y-%m-%d %H:%M:%S"),
+                             "points": points, "daily": daily})
+    state["pending"] = []
+    try:
+        git_commit_history(now)
+    except Exception as exc:              # noqa: BLE001
+        print("历史提交失败: %s" % exc, file=sys.stderr)
 
 
 def git_commit_history(now):
@@ -350,7 +383,7 @@ def main():
     should_push = bool(fired) or digest_ok
     history_commit = forced or now.minute < 10
     if markets.get("intl"):
-        record_history(markets["intl"]["price"], now, history_commit)
+        record_history(state, markets["intl"]["price"], now, history_commit)
 
     if should_push:
         if fired:
