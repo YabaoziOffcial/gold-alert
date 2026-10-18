@@ -1,7 +1,7 @@
 {
   "name": "金价预警",
   "short_name": "金价预警",
-  "description": "快速设置国际金价涨破/跌破提醒阈值",
+  "description": "国际金价与民生积存金的价格播报与预警",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -10,10 +10,21 @@
   "theme_color": "#0A0A0C",
   "icons": [
     {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
       "src": "icon.svg",
       "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "type": "image/svg+xml"
     }
   ]
 }
