@@ -902,8 +902,9 @@
       hint += " · 振幅 " + ((hi - lo) / lo * 100).toFixed(2) + "%";
     }
     if (chart.avg !== null && chart.mode === "live") hint += " · 均价 " + fmt(chart.avg);
-    var zoomedNow = (chart.viewEnd - chart.viewStart) < (Math.max(0, (function(){var r=dataRange(chart.data||{kind:"line",points:[]});return r[1]-r[0];})()) - 1);
-    $("chartHint").textContent = hint + (zoomedNow ? " · 拖动平移" : " · 拖动放大");
+    var fullSpanNow = (function () { var r = dataRange(chart.data || { kind: "line", points: [] }); return r[1] - r[0]; })();
+    var zoomedNow = (chart.viewEnd - chart.viewStart) < Math.max(0, fullSpanNow) - 1;
+    $("chartHint").textContent = hint + (zoomedNow ? " · 拖动平移" : " · 点＋放大后可拖动");
 
     if (chart.hoverTs) showTooltip(series, xs, W);
     else $("tooltip").hidden = true;
@@ -1243,13 +1244,11 @@
       var span = chart.viewEnd - chart.viewStart;
       var rr = fullRange();
       if (span >= rr[1] - rr[0] - 1) {
-        // 全览状态下拖动：自动放大到 55%，以按下位置为中心，之后即可继续平移
-        var targetSpan = (rr[1] - rr[0]) * 0.55;
-        chart.zoom = (rr[1] - rr[0]) / targetSpan;
-        chart.center = clampCenter(pressTs, targetSpan);
-        chart.hoverTs = null;
-        renderChart();
-        toast("已放大，继续左右拖动可平移", false);
+        // 全览状态：不缩放，只提示先放大
+        if (!wrap._hinted) {
+          wrap._hinted = true;
+          toast("已显示全部数据，点 ＋ 放大后可左右拖动", false);
+        }
         return;
       }
       if (span < rr[1] - rr[0] - 1) {
