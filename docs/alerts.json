@@ -24,7 +24,7 @@
   "cmbc": [],
   "config": {
     "window_start": "09:00",
-    "window_end": "23:50",
+    "window_end": "02:00",
     "interval_minutes": 10
   }
 }
