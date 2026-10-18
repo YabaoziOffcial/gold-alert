@@ -340,6 +340,7 @@
     dirty: false,
     price: { intl: null, cmbc: null },
     history: { points: [], daily: [] },
+    dailyAll: [],
     alerts: []
   };
 
@@ -359,6 +360,32 @@
     t.className = "toast show" + (isErr ? " err" : "");
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function () { t.className = "toast"; }, 2600);
+  }
+
+  var LOCAL_KEY = "gold_local_points_v1";
+  function loadLocalPoints() {
+    try {
+      var arr = JSON.parse(localStorage.getItem(LOCAL_KEY) || "[]");
+      var cut = Date.now() / 1000 - 48 * 3600;
+      return (arr || []).filter(function (p) { return p && p[0] >= cut; });
+    } catch (e) { return []; }
+  }
+  function recordPoint(price) {
+    if (!price) return;
+    var arr = loadLocalPoints();
+    var ts = Math.floor(Date.now() / 1000 / 600) * 600;
+    if (arr.length && arr[arr.length - 1][0] === ts) arr[arr.length - 1][1] = price;
+    else arr.push([ts, price]);
+    while (arr.length > 400) arr.shift();
+    try { localStorage.setItem(LOCAL_KEY, JSON.stringify(arr)); } catch (e) {}
+  }
+  function mergedPoints(server) {
+    var map = {};
+    (server || []).forEach(function (p) { map[p[0]] = p[1]; });
+    loadLocalPoints().forEach(function (p) { map[p[0]] = p[1]; });
+    var out = Object.keys(map).map(function (k) { return [Number(k), map[k]]; });
+    out.sort(function (a, b) { return a[0] - b[0]; });
+    return out;
   }
 
   function b64encode(str) {
@@ -414,7 +441,14 @@
   function loadPrice() {
     fetch("https://api.gold-api.com/price/XAU", { cache: "no-store" })
       .then(function (r) { return r.json(); })
-      .then(function (d) { if (d && d.price) { state.price.intl = Number(d.price); render(); } })
+      .then(function (d) {
+        if (d && d.price) {
+          state.price.intl = Number(d.price);
+          recordPoint(state.price.intl);
+          render();
+          if (chart.mode === "live") renderChart();
+        }
+      })
       .catch(function () {});
 
     fetch("https://ntfy.sh/" + NTFY_TOPIC + "/json?poll=1&since=24h", { cache: "no-store" })
@@ -435,6 +469,23 @@
         render();
       })
       .catch(function () {});
+  }
+
+  function loadSinaDaily() {
+    return new Promise(function (resolve) {
+      var name = "sinaGoldDaily" + Date.now();
+      var s = document.createElement("script");
+      s.src = "https://stock2.finance.sina.com.cn/futures/api/jsonp.php/var%20" + name +
+        "=/GlobalFuturesService.getGlobalFuturesDailyKLine?symbol=XAU&_=" + Date.now();
+      s.onload = function () {
+        var arr = window[name] || [];
+        try { delete window[name]; } catch (e) {}
+        resolve(arr);
+      };
+      s.onerror = function () { resolve([]); };
+      document.head.appendChild(s);
+      setTimeout(function () { resolve(window[name] || []); }, 8000);
+    });
   }
 
   function loadHistory() {
@@ -462,14 +513,37 @@
 
   function seriesFor(mode) {
     var now = Math.floor(Date.now() / 1000);
-    if (mode === "month") return state.history.daily.map(function (d) { return [d[0], d[2]]; });
-    var pts = state.history.points;
     if (mode === "live") {
+      var pts = mergedPoints(state.history.points);
       var cut = now - 86400;
       var sub = pts.filter(function (p) { return p[0] >= cut; });
-      return sub.length >= 2 ? sub : pts.slice(-Math.min(pts.length, 144));
+      if (sub.length >= 2) return sub;
+      if (state.dailyAll.length >= 2) {
+        return state.dailyAll.slice(-7).map(function (d) {
+          return [Math.floor(new Date(d.date + "T00:00:00+08:00").getTime() / 1000), Number(d.close)];
+        });
+      }
+      return pts.slice(-Math.min(pts.length, 144));
     }
-    return pts;
+    if (state.dailyAll.length >= 2) {
+      if (mode === "day") {
+        return state.dailyAll.slice(-30).map(function (d) {
+          return [Math.floor(new Date(d.date + "T00:00:00+08:00").getTime() / 1000), Number(d.close)];
+        });
+      }
+      var months = {};
+      state.dailyAll.forEach(function (d) {
+        var key = d.date.slice(0, 7);
+        var ts = Math.floor(new Date(key + "-01T00:00:00+08:00").getTime() / 1000);
+        months[key] = [ts, Number(d.close)];
+      });
+      return Object.keys(months).sort().slice(-24).map(function (k) { return months[k]; });
+    }
+    if (mode === "month") {
+      var daily = state.history.daily.length >= 2 ? state.history.daily : buildDaily(state.history.points);
+      return daily.map(function (d) { return [d[0], d[2]]; });
+    }
+    return mergedPoints(state.history.points);
   }
 
   function resetView() {
@@ -569,9 +643,10 @@
   function showTooltip(pt, base, xFn, W) {
     var tip = $("tooltip");
     var d = new Date(pt[0] * 1000);
-    var tstr = chart.mode === "month"
-      ? (d.getMonth() + 1) + "月" + d.getDate() + "日"
-      : (d.getMonth() + 1) + "/" + d.getDate() + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
+    var tstr;
+    if (chart.mode === "month") tstr = d.getFullYear() + "年" + (d.getMonth() + 1) + "月";
+    else if (chart.mode === "day") tstr = d.getFullYear() + "/" + (d.getMonth() + 1) + "/" + d.getDate();
+    else tstr = (d.getMonth() + 1) + "/" + d.getDate() + " " + pad2(d.getHours()) + ":" + pad2(d.getMinutes());
     var diff = base ? ((pt[1] - base) / base * 100) : null;
     tip.innerHTML = '<b class="num">' + fmt(pt[1]) + '</b> <span class="t2">' + tstr + '</span>' +
       (diff === null ? "" : '<br><span class="t2">较区间起点 ' + (diff >= 0 ? "+" : "") + diff.toFixed(2) + '%</span>');
@@ -865,6 +940,9 @@
 
   window.__goldApp = { apply: applyAlerts, render: render, state: state, chart: chart, draw: renderChart };
   loadPrice(); loadAlerts(); loadHistory();
+  loadSinaDaily().then(function (rows) {
+    if (rows && rows.length) { state.dailyAll = rows; renderChart(); }
+  });
   setInterval(function () { loadPrice(); loadHistory(); }, 180000);
 })();
 </script>
