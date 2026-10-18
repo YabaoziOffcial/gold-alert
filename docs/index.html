@@ -86,6 +86,10 @@
   .chart{display:block;width:100%;height:150px;overflow:visible}
   .chart .grid{stroke:var(--line)}
   .th-hit{cursor:ns-resize;pointer-events:stroke}
+  .yaxis{position:absolute;left:0;top:0;bottom:0;width:44px;pointer-events:none}
+  .yaxis span{position:absolute;right:3px;transform:translateY(-50%);font-size:8.5px;color:var(--faint);font-variant-numeric:tabular-nums}
+  .thlabels{position:absolute;right:0;top:0;bottom:0;width:56px;pointer-events:none}
+  .thlabels span{position:absolute;right:1px;transform:translateY(-50%);font-size:8.5px;padding:0 2px;border-radius:3px;background:var(--surface)}
   .th-handle{pointer-events:none}
   .tooltip{position:absolute;top:2px;transform:translateX(-50%);background:var(--surface);
     border:1px solid var(--line);border-radius:9px;padding:5px 8px;font-size:10.5px;line-height:1.4;
@@ -300,6 +304,8 @@
 
         <div class="chart-wrap" id="chartWrap">
           <svg class="chart" id="chart" viewBox="0 0 320 150" preserveAspectRatio="none"></svg>
+          <div class="yaxis" id="yaxis"></div>
+          <div class="thlabels" id="thlabels"></div>
           <div class="tooltip" id="tooltip" hidden></div>
         </div>
         <div class="stats">
@@ -376,7 +382,7 @@
     <label>GitHub Token</label>
     <input id="tokenInput" type="password" placeholder="ghp_… 或 github_pat_…" autocomplete="off" spellcheck="false">
   </div>
-  <div class="field">
+  <div class="field" hidden>
     <label>仓库</label>
     <input id="repoInput" autocomplete="off" spellcheck="false">
   </div>
@@ -730,33 +736,41 @@
       svg.innerHTML = '<text x="160" y="75" text-anchor="middle" fill="' + (state.theme === "light" ? "#8B857C" : "#6E6A64") + '" font-size="11">历史数据收集中…</text>';
       ["stOpen", "stHigh", "stLow", "stCount"].forEach(function (id) { $(id).textContent = "—"; });
       $("chartHint").textContent = "数据收集中…";
+      $("yaxis").innerHTML = ""; $("thlabels").innerHTML = "";
       $("tooltip").hidden = true;
       return;
     }
 
-    var W = 320, H = 150, PAD = 8;
+    var W = 320, H = 150, PADL = 44, PADR = 30, PADT = 8, PADB = 8;
     var xs, ys = [], vals = [];
     if (series.kind === "line") {
       var vp = series.points.filter(function (p) { return p[0] >= s && p[0] <= e; });
       if (vp.length < 2) vp = series.points.slice(-2);
       vals = vp.map(function (p) { return p[1]; });
-      xs = function (t) { return PAD + (t - s) / ((e - s) || 1) * (W - 2 * PAD); };
+      xs = function (t) { return PADL + (t - s) / ((e - s) || 1) * (W - PADL - PADR); };
     } else {
       var vc = series.candles.filter(function (c) { return c.t >= s && c.t <= e; });
       if (!vc.length) vc = series.candles.slice(-2);
       vals = vc.map(function (c) { return c.l; }).concat(vc.map(function (c) { return c.h; }));
-      xs = function (t) { return PAD + (t - s) / ((e - s) || 1) * (W - 2 * PAD); };
+      xs = function (t) { return PADL + (t - s) / ((e - s) || 1) * (W - PADL - PADR); };
     }
     var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
     var vspan = (max - min) || 1;
-    var y = function (v) { return H - PAD - (v - min) / vspan * (H - 2 * PAD); };
+    var y = function (v) { return H - PADB - (v - min) / vspan * (H - PADT - PADB); };
 
-    var body = "";
+    var body = "", gridSvg = "", yAxisHtml = "";
+    for (var gi = 0; gi <= 4; gi++) {
+      var gv = min + vspan * (1 - gi / 4);
+      var gy = y(gv);
+      gridSvg += '<line class="grid" x1="' + PADL + '" y1="' + gy.toFixed(1) + '" x2="' + (W - PADR) +
+        '" y2="' + gy.toFixed(1) + '" stroke-dasharray="2 5"/>';
+      yAxisHtml += '<span style="top:' + (gy / H * 100).toFixed(2) + '%">' + fmt(gv) + '</span>';
+    }
     if (series.kind === "line") {
       var line = "";
       for (var i = 0; i < vp.length; i++) line += (i ? "L" : "M") + xs(vp[i][0]).toFixed(1) + " " + y(vp[i][1]).toFixed(1);
-      var area = line + " L" + xs(vp[vp.length - 1][0]).toFixed(1) + " " + (H - PAD) +
-        " L" + xs(vp[0][0]).toFixed(1) + " " + (H - PAD) + " Z";
+      var area = line + " L" + xs(vp[vp.length - 1][0]).toFixed(1) + " " + (H - PADB) +
+        " L" + xs(vp[0][0]).toFixed(1) + " " + (H - PADB) + " Z";
       body = '<path d="' + area + '" fill="url(#ag)"/>' +
         '<path d="' + line + '" fill="none" stroke="url(#lg)" stroke-width="2" stroke-linecap="round" ' +
         'stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' +
@@ -764,10 +778,10 @@
         '<circle cx="' + xs(vp[vp.length - 1][0]).toFixed(1) + '" cy="' + y(vp[vp.length - 1][1]).toFixed(1) + '" r="2.6" fill="#E5B455"/>';
       if (chart.hoverTs) {
         var hp = nearest(vp, chart.hoverTs);
-        if (hp) body += crosshair(xs(hp[0]), y(hp[1]), H, PAD);
+        if (hp) body += crosshair(xs(hp[0]), y(hp[1]), H, PADB);
       }
     } else {
-      var cw = Math.max(2, (W - 2 * PAD) / vc.length * 0.55);
+      var cw = Math.max(2, (W - PADL - PADR) / vc.length * 0.55);
       vc.forEach(function (c) {
         var up = c.c >= c.o;
         var col = up ? "#FF5D5D" : "#33C97B";
@@ -777,7 +791,7 @@
         body += '<rect x="' + (xs(c.t) - cw / 2).toFixed(1) + '" y="' + top.toFixed(1) + '" width="' + cw.toFixed(1) +
           '" height="' + h.toFixed(1) + '" rx="1" fill="' + col + '" opacity="' + (up ? ".9" : ".85") + '"/>';
         if (chart.hoverTs && Math.abs(c.t - chart.hoverTs) < 86400 / 3) {
-          body += crosshair(xs(c.t), y(c.h), H, PAD);
+          body += crosshair(xs(c.t), y(c.h), H, PADB);
         }
       });
     }
@@ -785,6 +799,7 @@
     // 阈值线（可拖动）
     chart.yMap = { min: min, span: vspan };
     var thLines = "";
+    var thLabels = "";
     var thresholds = [];
     (state.intl.above || []).forEach(function (p) { thresholds.push({ p: p, kind: "above" }); });
     (state.intl.below || []).forEach(function (p) { thresholds.push({ p: p, kind: "below" }); });
@@ -797,21 +812,23 @@
       if (price < min - vspan * 0.02 || price > max + vspan * 0.02) return;
       var yy = y(price).toFixed(1);
       var col = t.kind === "above" ? "#FF5D5D" : "#33C97B";
-      thLines += '<line x1="8" y1="' + yy + '" x2="296" y2="' + yy + '" stroke="' + col +
+      thLines += '<line x1="' + PADL + '" y1="' + yy + '" x2="' + (W - PADR) + '" y2="' + yy + '" stroke="' + col +
         '" stroke-width="' + (moving ? 1.6 : 1) + '" stroke-dasharray="' + (moving ? "none" : "4 4") +
         '" opacity="' + (moving ? ".95" : ".55") + '"/>' +
-        '<circle class="th-handle" cx="300" cy="' + yy + '" r="3.2" fill="' + col + '" opacity="' + (moving ? "1" : ".7") + '"/>' +
-        '<text x="306" y="' + (Number(yy) + 3) + '" font-size="8" fill="' + col + '">' + Math.round(price) + '</text>' +
-        '<line class="th-hit" data-kind="' + t.kind + '" data-price="' + t.p + '" x1="8" y1="' + yy +
-        '" x2="300" y2="' + yy + '" stroke="transparent" stroke-width="20"/>';
+        '<circle class="th-handle" cx="' + (W - PADR + 3) + '" cy="' + yy + '" r="3" fill="' + col + '" opacity="' + (moving ? "1" : ".75") + '"/>' +
+        '<line class="th-hit" data-kind="' + t.kind + '" data-price="' + t.p + '" x1="' + PADL + '" y1="' + yy +
+        '" x2="' + (W - PADR) + '" y2="' + yy + '" stroke="transparent" stroke-width="20"/>';
+      thLabels += '<span style="top:' + (Number(yy) / H * 100).toFixed(2) + '%;color:' + col + '">' + Math.round(price) + '</span>';
     });
 
     svg.innerHTML =
       '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">' +
       '<stop offset="0%" stop-color="#E5B455" stop-opacity=".32"/><stop offset="100%" stop-color="#E5B455" stop-opacity="0"/></linearGradient>' +
       '<linearGradient id="lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B8842F"/><stop offset="100%" stop-color="#F2C972"/></linearGradient></defs>' +
-      '<line class="grid" x1="8" y1="75" x2="312" y2="75" stroke-dasharray="2 5"/>' +
-      body + thLines;
+      gridSvg + body + thLines;
+
+    $("yaxis").innerHTML = yAxisHtml;
+    $("thlabels").innerHTML = thLabels;
 
     // 统计
     if (series.kind === "line") {
@@ -848,7 +865,7 @@
   }
 
   function crosshair(cx, cy, H, PAD) {
-    return '<line x1="' + cx.toFixed(1) + '" y1="4" x2="' + cx.toFixed(1) + '" y2="' + (H - PAD) +
+    return '<line x1="' + cx.toFixed(1) + '" y1="4" x2="' + cx.toFixed(1) + '" y2="' + (H - PADB) +
       '" stroke="rgba(229,180,85,.45)" stroke-width="1" stroke-dasharray="3 3"/>' +
       '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="3.4" fill="#F2C972" stroke="#141419" stroke-width="1.4"/>';
   }
@@ -1162,9 +1179,9 @@
     if (!thDrag || !chart.yMap) return;
     if (e.stopPropagation) e.stopPropagation();
     var rect = $("chartWrap").getBoundingClientRect();
-    var H = 150, PAD = 8;
+    var H = 150, PADT = 8, PADB = 8;
     var py = (e.clientY - rect.top) / rect.height * H;
-    var price = chart.yMap.min + (H - PAD - py) / (H - 2 * PAD) * chart.yMap.span;
+    var price = chart.yMap.min + (H - PADB - py) / (H - PADT - PADB) * chart.yMap.span;
     var snapped = Math.round(price);
     var others = state.intl[thDrag.kind].filter(function (x) { return x !== thDrag.from; });
     for (var k = 0; k < others.length; k++) {
