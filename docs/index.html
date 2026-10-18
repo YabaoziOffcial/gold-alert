@@ -579,6 +579,12 @@
   function seriesFor(mode) {
     var now = Math.floor(Date.now() / 1000);
     if (mode === "live") {
+      if (state.minute.length >= 5) {
+        var arr = state.minute.slice();
+        var lastTs = arr[arr.length - 1][0];
+        if (state.price.intl && now - lastTs < 1800) arr.push([now, state.price.intl]);
+        return arr;
+      }
       var pts = mergedPoints(state.history.points);
       var cut = now - 86400;
       var sub = pts.filter(function (p) { return p[0] >= cut; });
@@ -689,7 +695,8 @@
 
     $("rangeLow").textContent = "低 " + fmt(min);
     $("rangeHigh").textContent = "高 " + fmt(max);
-    $("chartHint").textContent = labelForMode() + " · " + vp.length + " 点";
+    var stale = chart.mode === "live" && vp.length && (Date.now() / 1000 - vp[vp.length - 1][0] > 7200);
+    $("chartHint").textContent = (stale ? "休市中 · " : "") + labelForMode() + " · " + vp.length + " 点";
 
     if (chart.hoverTs) {
       var pt = nearest(vp, chart.hoverTs);
