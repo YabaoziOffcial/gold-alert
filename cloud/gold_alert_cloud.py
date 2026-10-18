@@ -381,9 +381,23 @@ def main():
         price_lines.append("民生  ⚠️ 获取失败")
 
     should_push = bool(fired) or digest_ok
-    history_commit = forced or now.minute < 10
+
+    # 距离上次历史提交超过 55 分钟就落一次盘（不依赖整点）
+    last_hist = state.get("last_hist_commit")
+    history_commit = forced
+    if not history_commit:
+        if not last_hist:
+            history_commit = True
+        else:
+            try:
+                last_dt = datetime.strptime(last_hist, "%Y-%m-%d %H:%M:%S").replace(tzinfo=TZ_CN)
+                history_commit = (now - last_dt).total_seconds() >= 55 * 60
+            except ValueError:
+                history_commit = True
     if markets.get("intl"):
         record_history(state, markets["intl"]["price"], now, history_commit)
+        if history_commit:
+            state["last_hist_commit"] = now.strftime("%Y-%m-%d %H:%M:%S")
 
     if should_push:
         if fired:
