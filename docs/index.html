@@ -902,7 +902,8 @@
       hint += " · 振幅 " + ((hi - lo) / lo * 100).toFixed(2) + "%";
     }
     if (chart.avg !== null && chart.mode === "live") hint += " · 均价 " + fmt(chart.avg);
-    $("chartHint").textContent = hint + " · 拖动查看";
+    var zoomedNow = (chart.viewEnd - chart.viewStart) < (Math.max(0, (function(){var r=dataRange(chart.data||{kind:"line",points:[]});return r[1]-r[0];})()) - 1);
+    $("chartHint").textContent = hint + (zoomedNow ? " · 拖动平移" : " · 拖动放大");
 
     if (chart.hoverTs) showTooltip(series, xs, W);
     else $("tooltip").hidden = true;
@@ -1182,7 +1183,7 @@
 
   var pointers = {}, pinchStart = 0, pinchSpan = 0;
   var wrap = $("chartWrap");
-  var startX = 0, pressTime = 0, tapCandidate = false, panning = false;
+  var startX = 0, pressTime = 0, tapCandidate = false, panning = false, pressTs = 0;
 
   function fullRange() {
     var r = dataRange(chart.data || { kind: "line", points: [] });
@@ -1201,6 +1202,7 @@
     var keys = Object.keys(pointers);
     if (keys.length === 1) {
       startX = e.clientX;
+      pressTs = tsFromEvent(e);
       pressTime = Date.now();
       tapCandidate = true;
       panning = false;
@@ -1240,6 +1242,16 @@
     if (panning) {
       var span = chart.viewEnd - chart.viewStart;
       var rr = fullRange();
+      if (span >= rr[1] - rr[0] - 1) {
+        // 全览状态下拖动：自动放大到 55%，以按下位置为中心，之后即可继续平移
+        var targetSpan = (rr[1] - rr[0]) * 0.55;
+        chart.zoom = (rr[1] - rr[0]) / targetSpan;
+        chart.center = clampCenter(pressTs, targetSpan);
+        chart.hoverTs = null;
+        renderChart();
+        toast("已放大，继续左右拖动可平移", false);
+        return;
+      }
       if (span < rr[1] - rr[0] - 1) {
         var width = wrap.getBoundingClientRect().width || 1;
         var shift = dx / width * span;
