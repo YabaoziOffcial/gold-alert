@@ -85,6 +85,8 @@
   .chart-wrap{position:relative;margin-top:6px;touch-action:none}
   .chart{display:block;width:100%;height:150px;overflow:visible}
   .chart .grid{stroke:var(--line)}
+  .th-hit{cursor:ns-resize;pointer-events:stroke}
+  .th-handle{pointer-events:none}
   .tooltip{position:absolute;top:2px;transform:translateX(-50%);background:var(--surface);
     border:1px solid var(--line);border-radius:9px;padding:5px 8px;font-size:10.5px;line-height:1.4;
     color:var(--text);white-space:nowrap;pointer-events:none;box-shadow:var(--shadow);z-index:2}
@@ -780,18 +782,28 @@
       });
     }
 
-    // 阈值线
+    // 阈值线（可拖动）
+    chart.yMap = { min: min, span: vspan };
     var thLines = "";
     var thresholds = [];
     (state.intl.above || []).forEach(function (p) { thresholds.push({ p: p, kind: "above" }); });
     (state.intl.below || []).forEach(function (p) { thresholds.push({ p: p, kind: "below" }); });
     thresholds.forEach(function (t) {
       if (t.p < min - vspan * 0.02 || t.p > max + vspan * 0.02) return;
-      var yy = y(t.p).toFixed(1);
+      var price = t.p, moving = false;
+      if (chart.thPreview && chart.thPreview.kind === t.kind && chart.thPreview.from === t.p) {
+        price = chart.thPreview.to; moving = true;
+      }
+      if (price < min - vspan * 0.02 || price > max + vspan * 0.02) return;
+      var yy = y(price).toFixed(1);
       var col = t.kind === "above" ? "#FF5D5D" : "#33C97B";
-      thLines += '<line x1="8" y1="' + yy + '" x2="300" y2="' + yy + '" stroke="' + col +
-        '" stroke-width="1" stroke-dasharray="4 4" opacity=".55"/>' +
-        '<text x="303" y="' + (Number(yy) + 3) + '" font-size="8" fill="' + col + '">' + t.p + '</text>';
+      thLines += '<line x1="8" y1="' + yy + '" x2="296" y2="' + yy + '" stroke="' + col +
+        '" stroke-width="' + (moving ? 1.6 : 1) + '" stroke-dasharray="' + (moving ? "none" : "4 4") +
+        '" opacity="' + (moving ? ".95" : ".55") + '"/>' +
+        '<circle class="th-handle" cx="300" cy="' + yy + '" r="3.2" fill="' + col + '" opacity="' + (moving ? "1" : ".7") + '"/>' +
+        '<text x="306" y="' + (Number(yy) + 3) + '" font-size="8" fill="' + col + '">' + Math.round(price) + '</text>' +
+        '<line class="th-hit" data-kind="' + t.kind + '" data-price="' + t.p + '" x1="8" y1="' + yy +
+        '" x2="300" y2="' + yy + '" stroke="transparent" stroke-width="20"/>';
     });
 
     svg.innerHTML =
@@ -821,7 +833,13 @@
 
     var stale = chart.mode === "live" && series.points.length &&
       (Date.now() / 1000 - series.points[series.points.length - 1][0] > 7200);
-    $("chartHint").textContent = (stale ? "休市中 · " : "") + labelForMode() + " · 拖动查看";
+    var hint = (stale ? "休市中 · " : "") + labelForMode();
+    if (series.kind === "candle" && series.candles.length) {
+      var hi = Math.max.apply(null, series.candles.map(function (c) { return c.h; }));
+      var lo = Math.min.apply(null, series.candles.map(function (c) { return c.l; }));
+      hint += " · 振幅 " + ((hi - lo) / lo * 100).toFixed(2) + "%";
+    }
+    $("chartHint").textContent = hint + " · 拖动查看";
 
     if (chart.hoverTs) showTooltip(series, xs, W);
     else $("tooltip").hidden = true;
@@ -870,8 +888,10 @@
       var dt = new Date(ts * 1000);
       var dateStr = dt.getFullYear() + "/" + (dt.getMonth() + 1) + "/" + dt.getDate();
       if (chart.mode === "month") dateStr = dt.getFullYear() + "年" + (dt.getMonth() + 1) + "月";
+      var amp = (best.h - best.l) / best.o * 100;
       html = '<b>' + fmt(best.c) + '</b> <span class="t2">' + dateStr + '</span><br>' +
-        '<span class="t2">开 ' + fmt(best.o) + ' 高 ' + fmt(best.h) + ' 低 ' + fmt(best.l) + '</span>';
+        '<span class="t2">开 ' + fmt(best.o) + ' 高 ' + fmt(best.h) + ' 低 ' + fmt(best.l) + '</span><br>' +
+        '<span class="t2">振幅 ' + amp.toFixed(2) + '%</span>';
       tip.innerHTML = html;
       tip.style.left = Math.min(Math.max(xs(ts), 70), W - 70) / W * 100 + "%";
     }
@@ -1126,6 +1146,49 @@
   wrap.addEventListener("pointerleave", function () {
     if (!Object.keys(pointers).length) { chart.hoverTs = null; renderChart(); }
   });
+
+  /* ---------------- 阈值线拖动改价 ---------------- */
+  var thDrag = null;
+  var chartSvg = $("chart");
+  chartSvg.addEventListener("pointerdown", function (e) {
+    var t = e.target;
+    if (!t || !t.classList || !t.classList.contains("th-hit")) return;
+    if (e.stopPropagation) e.stopPropagation();
+    var from = Number(t.getAttribute("data-price"));
+    thDrag = { kind: t.getAttribute("data-kind"), from: from, to: from };
+    try { chartSvg.setPointerCapture(e.pointerId); } catch (err) {}
+  });
+  chartSvg.addEventListener("pointermove", function (e) {
+    if (!thDrag || !chart.yMap) return;
+    if (e.stopPropagation) e.stopPropagation();
+    var rect = $("chartWrap").getBoundingClientRect();
+    var H = 150, PAD = 8;
+    var py = (e.clientY - rect.top) / rect.height * H;
+    var price = chart.yMap.min + (H - PAD - py) / (H - 2 * PAD) * chart.yMap.span;
+    thDrag.to = Math.round(price);
+    chart.thPreview = { kind: thDrag.kind, from: thDrag.from, to: thDrag.to };
+    renderChart();
+  });
+  function endThDrag() {
+    if (!thDrag) return;
+    var d = thDrag;
+    thDrag = null;
+    chart.thPreview = null;
+    if (Math.abs(d.to - d.from) >= 0.5) {
+      var arr = state.intl[d.kind];
+      var i = arr.indexOf(d.from);
+      if (i >= 0) {
+        arr[i] = d.to;
+        state.dirty = true;
+        buzz(10);
+        render();
+        toast("阈值改为 " + fmt(d.to) + "，记得保存");
+      }
+    }
+    renderChart();
+  }
+  chartSvg.addEventListener("pointerup", endThDrag);
+  chartSvg.addEventListener("pointercancel", function () { thDrag = null; chart.thPreview = null; renderChart(); });
 
   /* ---------------- 拖拽排序 ---------------- */
   var drag = null;
