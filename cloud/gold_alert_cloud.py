@@ -33,6 +33,9 @@ ROOT = BASE.parent
 STATE_FILE = ROOT / "state" / "state.json"
 ALERT_FILE = ROOT / "alerts.json"
 HISTORY_FILE = ROOT / "docs" / "history.json"
+DATA_DIR = ROOT / "data"
+PRICE_FILE = DATA_DIR / "price.json"
+ALERT_LOG_FILE = DATA_DIR / "alert-log.json"
 
 TZ_CN = timezone(timedelta(hours=8))
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -270,6 +273,68 @@ def record_history(state, price, now, commit):
         print("历史提交失败: %s" % exc, file=sys.stderr)
 
 
+def write_price(now, markets):
+    """把最新报价写到 data/price.json，供网页直接读取。"""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+    def pack(d):
+        if not d:
+            return None
+        return {"price": round(float(d["price"]), 2),
+                "pre_close": d.get("pre_close"),
+                "high": d.get("high"),
+                "low": d.get("low")}
+
+    save_json(PRICE_FILE, {
+        "updated": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "ts": int(now.timestamp()),
+        "intl": pack(markets.get("intl")),
+        "cmbc": pack(markets.get("cmbc")),
+    })
+
+
+def append_alert_log(now, fired, markets):
+    """把已触发的预警追加到 data/alert-log.json（保留最近 500 条）。"""
+    if not fired:
+        return
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    data = load_json(ALERT_LOG_FILE, {"items": []})
+    items = [x for x in (data.get("items") or []) if isinstance(x, dict)]
+    for market, item in fired:
+        d = markets.get(market) or {}
+        items.append({
+            "ts": int(now.timestamp()),
+            "market": market,
+            "direction": item.get("direction"),
+            "threshold": item.get("price"),
+            "price": round(float(d["price"]), 2) if d.get("price") else None,
+        })
+    items.sort(key=lambda x: x.get("ts") or 0)
+    items = items[-500:]
+    save_json(ALERT_LOG_FILE, {"updated": now.strftime("%Y-%m-%d %H:%M:%S"),
+                               "items": items})
+
+
+def git_commit_data(now, message):
+    """提交 data/ 目录（不在 docs 下，不会触发 Pages 重建）。"""
+    def run(args):
+        return subprocess.run(["git"] + args, cwd=str(ROOT),
+                              capture_output=True, text=True)
+    run(["config", "user.name", "gold-alert-bot"])
+    run(["config", "user.email", "gold-alert-bot@users.noreply.github.com"])
+    run(["add", "data"])
+    if run(["diff", "--cached", "--quiet"]).returncode == 0:
+        return
+    run(["commit", "-m", message])
+    push = None
+    for _ in range(2):
+        push = run(["push", "origin", "HEAD:main"])
+        if push.returncode == 0:
+            return
+        run(["pull", "--rebase", "--autostash", "origin", "main"])
+    raise RuntimeError((push.stderr or push.stdout or "push failed").strip()[:300])
+
+
 def git_commit_history(now):
     def run(args):
         return subprocess.run(["git"] + args, cwd=str(ROOT), capture_output=True, text=True)
@@ -320,6 +385,21 @@ def main():
     minutes = now.hour * 60 + now.minute
     in_window = start <= minutes <= end if start <= end else (minutes >= start or minutes <= end)
     if not in_window and not forced:
+        try:
+            quiet = {}
+            try:
+                quiet["intl"] = fetch_intl()
+            except Exception:             # noqa: BLE001
+                pass
+            try:
+                quiet["cmbc"] = fetch_cmbc()
+            except Exception:             # noqa: BLE001
+                pass
+            if quiet:
+                write_price(now, quiet)
+                git_commit_data(now, "data: price %s" % now.strftime("%m-%d %H:%M"))
+        except Exception as exc:          # noqa: BLE001
+            print("价格写入失败: %s" % exc, file=sys.stderr)
         print("不在提醒时间段 %s-%s 内，跳过（%s）"
               % (cfg.get("window_start"), cfg.get("window_end"), now.strftime("%H:%M")))
         return 0
@@ -381,6 +461,13 @@ def main():
         price_lines.append("民生  ⚠️ 获取失败")
 
     should_push = bool(fired) or digest_ok
+
+    try:
+        write_price(now, markets)
+        append_alert_log(now, fired, markets)
+        git_commit_data(now, "data: price %s" % now.strftime("%m-%d %H:%M"))
+    except Exception as exc:              # noqa: BLE001
+        print("数据提交失败: %s" % exc, file=sys.stderr)
 
     # 距离上次历史提交超过 55 分钟就落一次盘（不依赖整点）
     last_hist = state.get("last_hist_commit")
