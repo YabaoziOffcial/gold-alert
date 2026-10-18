@@ -1178,7 +1178,12 @@
       var arr = state.intl[d.kind];
       var i = arr.indexOf(d.from);
       if (i >= 0) {
-        arr[i] = d.to;
+        var existing = arr.indexOf(d.to);
+        if (existing >= 0 && existing !== i) {
+          arr.splice(i, 1);            // 拖到已有档位：合并，避免重复
+        } else {
+          arr[i] = d.to;
+        }
         state.dirty = true;
         buzz(10);
         render();
