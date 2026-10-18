@@ -597,6 +597,13 @@
     var area = line + " L" + x(vp[vp.length - 1][0]).toFixed(1) + " " + (H - PAD) +
       " L" + x(vp[0][0]).toFixed(1) + " " + (H - PAD) + " Z";
 
+    var dots = "";
+    if (vp.length <= 40) {
+      for (var k = 0; k < vp.length; k++) {
+        dots += '<circle cx="' + x(vp[k][0]).toFixed(1) + '" cy="' + y(vp[k][1]).toFixed(1) +
+          '" r="1.9" fill="#E5B455" opacity=".85"/>';
+      }
+    }
     var cross = "";
     if (chart.hoverTs) {
       var hp = nearest(vp, chart.hoverTs);
@@ -613,7 +620,7 @@
       '<stop offset="0%" stop-color="#E5B455" stop-opacity=".32"/><stop offset="100%" stop-color="#E5B455" stop-opacity="0"/></linearGradient>' +
       '<linearGradient id="lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B8842F"/><stop offset="100%" stop-color="#F2C972"/></linearGradient></defs>' +
       '<path d="' + area + '" fill="url(#ag)"/>' +
-      '<path d="' + line + '" fill="none" stroke="url(#lg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' + cross;
+      '<path d="' + line + '" fill="none" stroke="url(#lg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' + dots + cross;
 
     $("rangeLow").textContent = "低 " + fmt(min);
     $("rangeHigh").textContent = "高 " + fmt(max);
