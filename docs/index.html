@@ -85,7 +85,8 @@
   .chart-wrap{position:relative;margin-top:6px;touch-action:none}
   .chart{display:block;width:100%;height:150px;overflow:visible}
   .chart .grid{stroke:var(--line)}
-  .th-hit{cursor:ns-resize;pointer-events:stroke}
+  .th-hit{pointer-events:none}
+  .th-handle{pointer-events:none}
   .yaxis{position:absolute;left:0;top:0;bottom:0;width:44px;pointer-events:none}
   .yaxis span{position:absolute;right:3px;transform:translateY(-50%);font-size:8.5px;color:var(--faint);font-variant-numeric:tabular-nums}
   .thlabels{position:absolute;right:0;top:0;bottom:0;width:56px;pointer-events:none}
@@ -828,8 +829,7 @@
         '" stroke-width="' + (moving ? 1.6 : 1) + '" stroke-dasharray="' + (moving ? "none" : "4 4") +
         '" opacity="' + (moving ? ".95" : ".55") + '"/>' +
         '<circle class="th-handle" cx="' + (W - PADR + 3) + '" cy="' + yy + '" r="3" fill="' + col + '" opacity="' + (moving ? "1" : ".75") + '"/>' +
-        '<line class="th-hit" data-kind="' + t.kind + '" data-price="' + t.p + '" x1="' + PADL + '" y1="' + yy +
-        '" x2="' + (W - PADR) + '" y2="' + yy + '" stroke="transparent" stroke-width="20"/>';
+        '';
       thLabels += '<span style="top:' + (Number(yy) / H * 100).toFixed(2) + '%;color:' + col + '">' + Math.round(price) + '</span>';
     });
 
@@ -1232,6 +1232,7 @@
   function onThUp() { endThDrag(); }
 
   chartSvg.addEventListener("pointerdown", function (e) {
+    return;   // 阈值线只读，不允许拖拽
     var t = e.target;
     if (!t || !t.classList || !t.classList.contains("th-hit")) return;
     if (e.stopPropagation) e.stopPropagation();
