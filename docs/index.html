@@ -292,6 +292,7 @@
           <div class="chart-tools">
             <button class="tool-btn" id="panLeft" hidden aria-label="左移">‹</button>
             <button class="tool-btn" id="panRight" hidden aria-label="右移">›</button>
+            <button class="tool-btn" id="styleToggle" hidden aria-label="切换K线/折线" style="font-size:11px;min-width:34px">线</button>
             <button class="tool-btn" id="zoomOut" aria-label="缩小">−</button>
             <button class="tool-btn" id="zoomIn" aria-label="放大">＋</button>
           </div>
@@ -450,7 +451,7 @@
     theme: "auto"
   };
 
-  var chart = { mode: "live", kind: "line", zoom: 1, center: null, viewStart: 0, viewEnd: 0, hoverTs: null, data: [] };
+  var chart = { mode: "live", kind: "line", style: "candle", zoom: 1, center: null, viewStart: 0, viewEnd: 0, hoverTs: null, data: [] };
 
   function $(id) { return document.getElementById(id); }
   function token() { return localStorage.getItem(LS.token) || ""; }
@@ -715,6 +716,19 @@
 
   function renderChart() {
     var series = seriesFor(chart.mode);
+    var origCandles = series.kind === "candle" ? series.candles : null;
+    var styleBtn = $("styleToggle");
+    if (chart.mode !== "live") {
+      var dense = origCandles && origCandles.length > 0 &&
+        ((origCandles.length > 140) || chart.style === "line");
+      if (dense) {
+        series = { kind: "line", points: origCandles.map(function (c) { return [c.t, c.c]; }) };
+      }
+      styleBtn.hidden = false;
+      styleBtn.textContent = series.kind === "line" ? "K" : "线";
+    } else {
+      styleBtn.hidden = true;
+    }
     chart.data = series;
     chart.kind = series.kind;
     var svg = $("chart");
@@ -829,7 +843,7 @@
         '" stroke-width="' + (moving ? 1.6 : 1) + '" stroke-dasharray="' + (moving ? "none" : "4 4") +
         '" opacity="' + (moving ? ".95" : ".55") + '"/>' +
         '<circle class="th-handle" cx="' + (W - PADR + 3) + '" cy="' + yy + '" r="3" fill="' + col + '" opacity="' + (moving ? "1" : ".75") + '"/>' +
-        '';
+'';
       thLabels += '<span style="top:' + (Number(yy) / H * 100).toFixed(2) + '%;color:' + col + '">' + Math.round(price) + '</span>';
     });
 
@@ -843,7 +857,14 @@
     $("thlabels").innerHTML = thLabels;
 
     // 统计
-    if (series.kind === "line") {
+    if (origCandles) {
+      var vc3 = origCandles;
+      $("stOpen").textContent = fmt(vc3[0].o);
+      $("stHigh").textContent = fmt(Math.max.apply(null, vc3.map(function (c) { return c.h; })));
+      $("stLow").textContent = fmt(Math.min.apply(null, vc3.map(function (c) { return c.l; })));
+      $("stCount").textContent = vc3.length;
+      $("stCountLabel").textContent = chart.mode === "day" ? "交易日" : "月份";
+    } else if (series.kind === "line") {
       var vp2 = series.points.filter(function (p) { return p[0] >= s && p[0] <= e; });
       if (vp2.length < 2) vp2 = series.points.slice(-2);
       $("stOpen").textContent = fmt(vp2[0][1]);
@@ -862,7 +883,7 @@
 
     var stale = chart.mode === "live" && series.points.length &&
       (Date.now() / 1000 - series.points[series.points.length - 1][0] > 7200);
-    var hint = (stale ? "休市中 · " : "") + labelForMode();
+    var hint = (stale ? "休市中 · " : "") + labelForMode() + (origCandles && series.kind === "line" ? " · 折线" : "");
     if (series.kind === "candle" && series.candles.length) {
       var hi = Math.max.apply(null, series.candles.map(function (c) { return c.h; }));
       var lo = Math.min.apply(null, series.candles.map(function (c) { return c.l; }));
@@ -1140,41 +1161,94 @@
     return chart.viewStart + ratio * (chart.viewEnd - chart.viewStart);
   }
 
-  var pointers = {}, pinchStart = 0, pinchSpan = 0, dragging = false;
+  var pointers = {}, pinchStart = 0, pinchSpan = 0;
   var wrap = $("chartWrap");
+  var startX = 0, pressTime = 0, tapCandidate = false, panning = false;
+
+  function fullRange() {
+    var r = dataRange(chart.data || { kind: "line", points: [] });
+    return [r[0], Math.max(r[1], r[0] + 600)];
+  }
+  function clampCenter(c, span) {
+    var r = fullRange();
+    var full = r[1] - r[0];
+    if (span >= full - 1) return (r[0] + r[1]) / 2;
+    return Math.min(Math.max(c, r[0] + span / 2), r[1] - span / 2);
+  }
+
   wrap.addEventListener("pointerdown", function (e) {
-    pointers[e.pointerId] = { x: e.clientX };
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
     try { wrap.setPointerCapture(e.pointerId); } catch (err) {}
     var keys = Object.keys(pointers);
-    if (keys.length === 1) { dragging = true; chart.hoverTs = tsFromEvent(e); renderChart(); }
+    if (keys.length === 1) {
+      startX = e.clientX;
+      pressTime = Date.now();
+      tapCandidate = true;
+      panning = false;
+      chart.hoverTs = tsFromEvent(e);
+      renderChart();
+    }
     if (keys.length === 2) {
-      dragging = false;
+      panning = false; tapCandidate = false;
       pinchStart = Math.abs(pointers[keys[0]].x - pointers[keys[1]].x) || 1;
       pinchSpan = chart.viewEnd - chart.viewStart;
-      chart.hoverTs = null; renderChart();
+      chart.hoverTs = null;
+      renderChart();
     }
   });
+
   wrap.addEventListener("pointermove", function (e) {
     if (!pointers[e.pointerId]) return;
-    pointers[e.pointerId] = { x: e.clientX };
+    var prev = pointers[e.pointerId];
+    pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
     var keys = Object.keys(pointers);
     if (keys.length >= 2) {
       var dist = Math.abs(pointers[keys[0]].x - pointers[keys[1]].x) || 1;
       var targetSpan = pinchSpan * (pinchStart / dist);
-      var rng = dataRange(chart.data || { kind: "line", points: [] });
-      var fullSpan = Math.max(rng[1] - rng[0], 600);
-      targetSpan = Math.min(Math.max(targetSpan, 600), fullSpan);
-      chart.zoom = fullSpan / targetSpan;
+      var r = fullRange();
+      var full = r[1] - r[0];
+      targetSpan = Math.min(Math.max(targetSpan, 600), full);
+      chart.zoom = full / targetSpan;
+      chart.center = clampCenter((chart.viewStart + chart.viewEnd) / 2, targetSpan);
       renderChart();
       return;
     }
-    if (dragging) { chart.hoverTs = tsFromEvent(e); renderChart(); }
+    var dx = e.clientX - prev.x;
+    if (!panning && tapCandidate && Math.abs(e.clientX - startX) > 8) {
+      panning = true;
+      tapCandidate = false;
+    }
+    if (panning) {
+      var span = chart.viewEnd - chart.viewStart;
+      var rr = fullRange();
+      if (span < rr[1] - rr[0] - 1) {
+        var width = wrap.getBoundingClientRect().width || 1;
+        var shift = dx / width * span;
+        chart.center = clampCenter((chart.viewStart + chart.viewEnd) / 2 - shift, span);
+        chart.hoverTs = null;
+        renderChart();
+      }
+      return;
+    }
+    if (tapCandidate) { chart.hoverTs = tsFromEvent(e); renderChart(); }
   });
-  function endPointer(e) { delete pointers[e.pointerId]; if (!Object.keys(pointers).length) dragging = false; }
+
+  function endPointer(e) {
+    delete pointers[e.pointerId];
+    if (!Object.keys(pointers).length) {
+      var tapped = tapCandidate && (Date.now() - pressTime < 450);
+      panning = false;
+      tapCandidate = false;
+      if (tapped) chart.hoverTs = tsFromEvent(e);
+      renderChart();
+    }
+  }
   wrap.addEventListener("pointerup", endPointer);
-  wrap.addEventListener("pointercancel", endPointer);
-  wrap.addEventListener("pointerleave", function () {
-    if (!Object.keys(pointers).length) { chart.hoverTs = null; renderChart(); }
+  wrap.addEventListener("pointercancel", function (e) {
+    delete pointers[e.pointerId];
+    panning = false; tapCandidate = false;
+    chart.hoverTs = null;
+    renderChart();
   });
 
   /* ---------------- 阈值线拖动改价 ---------------- */
@@ -1320,6 +1394,11 @@
     }
   });
 
+  $("styleToggle").addEventListener("click", function () {
+    chart.style = chart.style === "line" ? "candle" : "line";
+    renderChart();
+    buzz(6);
+  });
   $("zoomIn").addEventListener("click", function () { setZoom(1 / 1.6); });
   $("zoomOut").addEventListener("click", function () { setZoom(1.6); });
   $("panLeft").addEventListener("click", function () { panBy(-1); });
