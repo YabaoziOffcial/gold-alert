@@ -68,6 +68,7 @@
 
   .chart-wrap{position:relative;margin-top:6px;touch-action:none}
   .chart{display:block;width:100%;height:138px;overflow:visible}
+  .chart .grid{stroke:var(--line)}
   .tooltip{position:absolute;top:2px;transform:translateX(-50%);background:#24242C;border:1px solid var(--line);
     border-radius:9px;padding:5px 8px;font-size:10.5px;line-height:1.35;color:var(--text);
     white-space:nowrap;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.45)}
@@ -726,7 +727,7 @@
       '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">' +
       '<stop offset="0%" stop-color="#E5B455" stop-opacity=".32"/><stop offset="100%" stop-color="#E5B455" stop-opacity="0"/></linearGradient>' +
       '<linearGradient id="lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B8842F"/><stop offset="100%" stop-color="#F2C972"/></linearGradient></defs>' +
-      '<line x1="8" y1="70" x2="312" y2="70" stroke="rgba(255,255,255,.05)" stroke-dasharray="2 5"/>' +
+      '<line class="grid" x1="8" y1="70" x2="312" y2="70" stroke-dasharray="2 5"/>' +
       '<path d="' + area + '" fill="url(#ag)"/>' +
       '<path d="' + line + '" fill="none" stroke="url(#lg)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>' + dots +
       '<circle cx="' + x(vp[vp.length - 1][0]).toFixed(1) + '" cy="' + y(vp[vp.length - 1][1]).toFixed(1) + '" r="6" fill="#E5B455" opacity=".18"/>' +
@@ -1078,37 +1079,3 @@
     try { saved = localStorage.getItem("gold_theme"); } catch (e) {}
     if (!saved) {
       saved = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
-    }
-    applyTheme(saved);
-  })();
-  document.getElementById("btnRefresh").addEventListener("click", function () {
-    var b = this;
-    b.classList.add("spinning");
-    loadPrice(); loadHistory();
-    loadSinaMinute().then(function (rows) {
-      var parsed = parseMinute(rows);
-      if (parsed.length >= 5) { state.minute = parsed; renderChart(); }
-    });
-    loadSinaDaily().then(function (rows) { if (rows && rows.length) { state.dailyAll = rows; renderChart(); } });
-    setTimeout(function () { b.classList.remove("spinning"); }, 1100);
-    buzz(6);
-  });
-  document.getElementById("btnTheme").addEventListener("click", function () {
-    var cur = document.documentElement.getAttribute("data-theme") || "dark";
-    applyTheme(cur === "dark" ? "light" : "dark");
-  });
-
-  window.__goldApp = { apply: applyAlerts, render: render, state: state, chart: chart, draw: renderChart };
-  loadPrice(); loadAlerts(); loadHistory();
-  loadSinaMinute().then(function (rows) {
-    var parsed = parseMinute(rows);
-    if (parsed.length >= 5) { state.minute = parsed; if (chart.mode === "live") renderChart(); }
-  });
-  loadSinaDaily().then(function (rows) {
-    if (rows && rows.length) { state.dailyAll = rows; renderChart(); }
-  });
-  setInterval(function () { loadPrice(); loadHistory(); }, 180000);
-})();
-</script>
-</body>
-</html>
