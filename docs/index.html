@@ -577,7 +577,7 @@
           if (hit && cmbc === null) { cmbc = Number(hit[1].replace(/,/g, "")); cmbcTime = m.time; }
           if ((m.title || "").indexOf("⚡") === 0) alerts.push({ time: m.time, title: m.title, message: body.split("\n")[0] });
         }
-        if (cmbc) { state.price.cmbc = cmbc; state.cmbcTime = cmbcTime; }
+        if (cmbc && !state.cmbcStats) { state.price.cmbc = cmbc; state.cmbcTime = cmbcTime; }
         state.alerts = alerts.reverse();
         render();
       })
