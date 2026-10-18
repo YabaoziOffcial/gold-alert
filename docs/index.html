@@ -613,11 +613,11 @@
   }
 
   function rawUrl(sub) {
-    return "https://raw.githubusercontent.com/" + repo() + "/main/" + sub + "?t=" + Date.now();
+    return "./data/" + sub + "?t=" + Date.now();
   }
 
   function loadCloudPrice() {
-    fetch(rawUrl("data/price.json"), { cache: "no-store" })
+    fetch(rawUrl("price.json"), { cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (d) {
         if (!d) return;
@@ -636,7 +636,7 @@
   }
 
   function loadAlertLog() {
-    fetch(rawUrl("data/alert-log.json"), { cache: "no-store" })
+    fetch(rawUrl("alert-log.json"), { cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (d) {
         state.logItems = (d && d.items) || [];
