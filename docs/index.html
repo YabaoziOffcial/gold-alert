@@ -756,9 +756,20 @@
     }
     var min = Math.min.apply(null, vals), max = Math.max.apply(null, vals);
     var vspan = (max - min) || 1;
+    chart.avg = null;
+    if (series.kind === "line" && series.points.length) {
+      var sum = 0;
+      for (var ai = 0; ai < series.points.length; ai++) sum += series.points[ai][1];
+      chart.avg = sum / series.points.length;
+    }
     var y = function (v) { return H - PADB - (v - min) / vspan * (H - PADT - PADB); };
 
-    var body = "", gridSvg = "", yAxisHtml = "";
+    var body = "", gridSvg = "", yAxisHtml = "", avgSvg = "";
+    if (chart.avg !== null && chart.mode === "live" && series.kind === "line") {
+      var ay = y(chart.avg).toFixed(1);
+      avgSvg = '<line x1="' + PADL + '" y1="' + ay + '" x2="' + (W - PADR) + '" y2="' + ay +
+        '" stroke="#E5B455" stroke-width="1" stroke-dasharray="6 4" opacity=".6"/>';
+    }
     for (var gi = 0; gi <= 4; gi++) {
       var gv = min + vspan * (1 - gi / 4);
       var gy = y(gv);
@@ -805,13 +816,14 @@
     (state.intl.below || []).forEach(function (p) { thresholds.push({ p: p, kind: "below" }); });
     thresholds.forEach(function (t) {
       if (t.p < min - vspan * 0.02 || t.p > max + vspan * 0.02) return;
-      var price = t.p, moving = false;
+      var price = t.p, moving = false, effKind = t.kind;
       if (chart.thPreview && chart.thPreview.kind === t.kind && chart.thPreview.from === t.p) {
         price = chart.thPreview.to; moving = true;
+        if (chart.thPreview.toKind) effKind = chart.thPreview.toKind;
       }
       if (price < min - vspan * 0.02 || price > max + vspan * 0.02) return;
       var yy = y(price).toFixed(1);
-      var col = t.kind === "above" ? "#FF5D5D" : "#33C97B";
+      var col = effKind === "above" ? "#FF5D5D" : "#33C97B";
       thLines += '<line x1="' + PADL + '" y1="' + yy + '" x2="' + (W - PADR) + '" y2="' + yy + '" stroke="' + col +
         '" stroke-width="' + (moving ? 1.6 : 1) + '" stroke-dasharray="' + (moving ? "none" : "4 4") +
         '" opacity="' + (moving ? ".95" : ".55") + '"/>' +
@@ -825,7 +837,7 @@
       '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">' +
       '<stop offset="0%" stop-color="#E5B455" stop-opacity=".32"/><stop offset="100%" stop-color="#E5B455" stop-opacity="0"/></linearGradient>' +
       '<linearGradient id="lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#B8842F"/><stop offset="100%" stop-color="#F2C972"/></linearGradient></defs>' +
-      gridSvg + body + thLines;
+      gridSvg + avgSvg + body + thLines;
 
     $("yaxis").innerHTML = yAxisHtml;
     $("thlabels").innerHTML = thLabels;
@@ -856,6 +868,7 @@
       var lo = Math.min.apply(null, series.candles.map(function (c) { return c.l; }));
       hint += " · 振幅 " + ((hi - lo) / lo * 100).toFixed(2) + "%";
     }
+    if (chart.avg !== null && chart.mode === "live") hint += " · 均价 " + fmt(chart.avg);
     $("chartHint").textContent = hint + " · 拖动查看";
 
     if (chart.hoverTs) showTooltip(series, xs, W);
@@ -1188,7 +1201,12 @@
       if (Math.abs(others[k] - snapped) <= 4) { snapped = others[k]; break; }
     }
     thDrag.to = snapped;
-    chart.thPreview = { kind: thDrag.kind, from: thDrag.from, to: thDrag.to };
+    var rx = (e.clientX - rect.left) / rect.width;
+    var toKind = thDrag.kind;
+    if (rx < 0.28) toKind = "below";
+    else if (rx > 0.72) toKind = "above";
+    thDrag.toKind = toKind;
+    chart.thPreview = { kind: thDrag.kind, from: thDrag.from, to: thDrag.to, toKind: thDrag.toKind };
     renderChart();
   });
   function endThDrag() {
@@ -1197,19 +1215,19 @@
     thDrag = null;
     chart.thPreview = null;
     if (Math.abs(d.to - d.from) >= 0.5) {
+      var targetKind = d.toKind || d.kind;
       var arr = state.intl[d.kind];
       var i = arr.indexOf(d.from);
       if (i >= 0) {
-        var existing = arr.indexOf(d.to);
-        if (existing >= 0 && existing !== i) {
-          arr.splice(i, 1);            // 拖到已有档位：合并，避免重复
-        } else {
-          arr[i] = d.to;
-        }
+        arr.splice(i, 1);
+        var arr2 = state.intl[targetKind];
+        if (arr2.indexOf(d.to) < 0) arr2.push(d.to);
         state.dirty = true;
         buzz(10);
         render();
-        toast("阈值改为 " + fmt(d.to) + "，记得保存");
+        toast(targetKind !== d.kind
+          ? "已改为" + (targetKind === "above" ? "涨破 " : "跌破 ") + fmt(d.to) + "，记得保存"
+          : "阈值改为 " + fmt(d.to) + "，记得保存");
       }
     }
     renderChart();
