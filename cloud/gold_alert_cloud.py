@@ -33,7 +33,7 @@ ROOT = BASE.parent
 STATE_FILE = ROOT / "state" / "state.json"
 ALERT_FILE = ROOT / "alerts.json"
 HISTORY_FILE = ROOT / "docs" / "history.json"
-DATA_DIR = ROOT / "data"
+DATA_DIR = ROOT / "docs" / "data"
 PRICE_FILE = DATA_DIR / "price.json"
 ALERT_LOG_FILE = DATA_DIR / "alert-log.json"
 
@@ -322,7 +322,7 @@ def git_commit_data(now, message):
                               capture_output=True, text=True)
     run(["config", "user.name", "gold-alert-bot"])
     run(["config", "user.email", "gold-alert-bot@users.noreply.github.com"])
-    run(["add", "data"])
+    run(["add", "docs/data"])
     if run(["diff", "--cached", "--quiet"]).returncode == 0:
         return
     run(["commit", "-m", message])
