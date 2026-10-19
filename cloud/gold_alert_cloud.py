@@ -295,6 +295,38 @@ def record_history(state, price, now, commit):
         print("历史提交失败: %s" % exc, file=sys.stderr)
 
 
+PRICE_FEED_TOPIC = os.environ.get("PRICE_FEED_TOPIC") or "gold-price-feed-sd-7f3k9x2q"
+
+
+def publish_price_feed(now, markets, server):
+    """把最新报价以静默消息发到独立的 ntfy 主题，网页直接读取，不触发 Pages 构建。"""
+    def pack(d):
+        if not d:
+            return None
+        return {"price": round(float(d["price"]), 2),
+                "pre_close": d.get("pre_close"),
+                "high": d.get("high"),
+                "low": d.get("low")}
+
+    payload = {
+        "updated": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "ts": int(now.timestamp()),
+        "intl": pack(markets.get("intl")),
+        "cmbc": pack(markets.get("cmbc")),
+    }
+    try:
+        http_post_json(server + "/", {
+            "topic": PRICE_FEED_TOPIC,
+            "message": json.dumps(payload, ensure_ascii=False),
+            "priority": 1,
+            "tags": ["bar_chart"],
+        })
+        return True
+    except Exception as exc:              # noqa: BLE001
+        print("价格流推送失败: %s" % exc, file=sys.stderr)
+        return False
+
+
 def write_price(now, markets):
     """把最新报价写到 data/price.json，供网页直接读取。"""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -417,8 +449,7 @@ def main():
             except Exception:             # noqa: BLE001
                 pass
             if quiet:
-                write_price(now, quiet)
-                git_commit_data(now, "data: price %s" % now.strftime("%m-%d %H:%M"))
+                publish_price_feed(now, quiet, server)
         except Exception as exc:          # noqa: BLE001
             print("价格写入失败: %s" % exc, file=sys.stderr)
         print("不在提醒时间段 %s-%s 内，跳过（%s）"
@@ -496,12 +527,13 @@ def main():
 
     should_push = bool(fired) or digest_ok or heartbeat
 
-    try:
-        write_price(now, markets)
-        append_alert_log(now, fired, markets)
-        git_commit_data(now, "data: price %s" % now.strftime("%m-%d %H:%M"))
-    except Exception as exc:              # noqa: BLE001
-        print("数据提交失败: %s" % exc, file=sys.stderr)
+    publish_price_feed(now, markets, server)
+    if fired:
+        try:
+            append_alert_log(now, fired, markets)
+            git_commit_data(now, "data: alert log %s" % now.strftime("%m-%d %H:%M"))
+        except Exception as exc:          # noqa: BLE001
+            print("预警记录提交失败: %s" % exc, file=sys.stderr)
 
     # 距离上次历史提交超过 55 分钟就落一次盘（不依赖整点）
     last_hist = state.get("last_hist_commit")
