@@ -7,6 +7,11 @@ on:
     # 第二条错峰 cron，尽量提高被调度器选中的概率
     - cron: '3,13,23,33,43,53 * * * *'
   workflow_dispatch:
+    inputs:
+      force:
+        description: '强制播报（1=忽略时间段与间隔）'
+        required: false
+        default: '0'
 
 permissions:
   contents: write
@@ -39,4 +44,5 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           NTFY_SERVER: ${{ vars.NTFY_SERVER || 'https://ntfy.sh' }}
           NTFY_PRIORITY: '4'
+          FORCE: ${{ github.event.inputs.force || '0' }}
         run: python cloud/gold_alert_cloud.py
