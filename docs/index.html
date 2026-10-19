@@ -577,7 +577,10 @@
           if (hit && cmbc === null) { cmbc = Number(hit[1].replace(/,/g, "")); cmbcTime = m.time; }
           if ((m.title || "").indexOf("⚡") === 0) alerts.push({ time: m.time, title: m.title, message: body.split("\n")[0] });
         }
-        if (cmbc && !state.cmbcStats) { state.price.cmbc = cmbc; state.cmbcTime = cmbcTime; }
+        if (cmbc && (!state.cmbcTime || cmbcTime > state.cmbcTime)) {
+          state.price.cmbc = cmbc;
+          state.cmbcTime = cmbcTime;
+        }
         state.alerts = alerts.reverse();
         render();
       })
@@ -616,7 +619,50 @@
     return "./data/" + sub + "?t=" + Date.now();
   }
 
-  function loadCloudPrice() {
+  function dispatchCloud() {
+    if (!token()) return Promise.resolve(false);
+    return fetch("https://api.github.com/repos/" + repo() + "/actions/workflows/gold-alert.yml/dispatches", {
+      method: "POST",
+      headers: {
+        "Authorization": "Bearer " + token(),
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ ref: "main" })
+    })
+      .then(function (r) { return r.ok || r.status === 204; })
+      .catch(function () { return false; });
+  }
+
+  function pollCloudFresh(prevTs, tries) {
+    tries = tries == null ? 12 : tries;
+    return fetch(rawUrl("price.json"), { cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.ts && (!prevTs || d.ts > prevTs)) {
+          state.cloudPrice = d;
+          if (d.intl && d.intl.price && !state.price.intl) state.price.intl = Number(d.intl.price);
+          if (d.cmbc && d.cmbc.price) {
+            state.price.cmbc = Number(d.cmbc.price);
+            state.cmbcTime = d.ts;
+            state.cmbcStats = d.cmbc;
+          }
+          render();
+          return true;
+        }
+        if (tries <= 0) return false;
+        return new Promise(function (res) { setTimeout(res, 5000); })
+          .then(function () { return pollCloudFresh(prevTs, tries - 1); });
+      })
+      .catch(function () {
+        if (tries <= 0) return false;
+        return new Promise(function (res) { setTimeout(res, 5000); })
+          .then(function () { return pollCloudFresh(prevTs, tries - 1); });
+      });
+  }
+
+  function loadCloudPrice(force) {
+    var prevTs = state.cloudPrice && state.cloudPrice.ts;
     fetch(rawUrl("price.json"), { cache: "no-store" })
       .then(function (r) { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
       .then(function (d) {
@@ -1572,7 +1618,21 @@
 
   $("btnRefresh").addEventListener("click", function () {
     var b = this; b.classList.add("spinning");
+    var prevTs = state.cloudPrice && state.cloudPrice.ts;
+    var canDispatch = !!token();
+    if (canDispatch) toast("正在向云端要最新报价…");
     loadPrice(); loadHistory(); loadCloudPrice(); loadAlertLog();
+    dispatchCloud().then(function (ok) {
+      if (!ok) return;
+      return pollCloudFresh(prevTs, 12).then(function (fresh) {
+        if (fresh) {
+          var t = state.cmbcTime ? new Date(state.cmbcTime * 1000) : null;
+          toast("云端已更新" + (t ? " · " + pad2(t.getHours()) + ":" + pad2(t.getMinutes()) : ""));
+        } else {
+          toast("云端任务已触发，稍等片刻会更新");
+        }
+      });
+    });
     loadSinaMinute().then(function (rows) {
       var parsed = parseMinute(rows);
       if (parsed.length >= 5) { state.minute = parsed; renderChart(); }
