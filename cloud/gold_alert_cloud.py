@@ -48,6 +48,8 @@ DEFAULT_CONFIG = {"window_start": "09:00", "window_end": "23:50", "interval_minu
 DIGEST_SLOTS = ["09:00", "11:30", "15:00", "20:00"]
 DIGEST_WINDOW_MIN = 12
 DIGEST_MIN_GAP_MIN = 45
+DIGEST_CATCHUP_MIN = 240        # 错过播报点后 4 小时内仍补发
+HEARTBEAT_GAP_MIN = 120         # 超过 2 小时没推送就发心跳速报
 WEEKEND_WINDOW = (9 * 60 + 15, 10 * 60 + 30)
 HISTORY_KEEP_DAYS = 7          # 10 分钟级明细保留 7 天
 HISTORY_DAILY_DAYS = 120       # 日线保留 120 天
@@ -214,8 +216,11 @@ def digest_due(now, state, forced):
     for slot in DIGEST_SLOTS:
         h, m = map(int, slot.split(":"))
         target = now.replace(hour=h, minute=m, second=0, microsecond=0)
-        if abs((now - target).total_seconds()) <= DIGEST_WINDOW_MIN * 60:
+        delta = (now - target).total_seconds()
+        if abs(delta) <= DIGEST_WINDOW_MIN * 60:
             return True, "定时播报 %s" % slot
+        if 0 < delta <= DIGEST_CATCHUP_MIN * 60:
+            return True, "补发 %s 播报" % slot
     return False, ""
 
 
@@ -460,7 +465,20 @@ def main():
     else:
         price_lines.append("民生  ⚠️ 获取失败")
 
-    should_push = bool(fired) or digest_ok
+    heartbeat = False
+    if not fired and not digest_ok:
+        last_push = state.get("last_push")
+        gap_ok = True
+        if last_push:
+            try:
+                lp = datetime.strptime(last_push, "%Y-%m-%d %H:%M:%S").replace(tzinfo=TZ_CN)
+                gap_ok = (now - lp).total_seconds() >= HEARTBEAT_GAP_MIN * 60
+            except ValueError:
+                gap_ok = True
+        if gap_ok:
+            heartbeat = True
+
+    should_push = bool(fired) or digest_ok or heartbeat
 
     try:
         write_price(now, markets)
@@ -514,13 +532,20 @@ def main():
             "topic": topic, "title": title, "message": message,
             "priority": 5 if fired else priority,
             "tags": ["rotating_light"] if fired else ["moneybag"]})
-        print("已推送(%s): %s" % (digest_reason if digest_ok and not fired else "价格预警",
+        reason_text = "价格预警"
+        if digest_ok and not fired:
+            reason_text = digest_reason or "定时播报"
+        elif heartbeat and not fired:
+            reason_text = "心跳速报（%.1f 小时未播报）" % (((now - datetime.strptime(state["last_push"], "%Y-%m-%d %H:%M:%S").replace(tzinfo=TZ_CN)).total_seconds() / 3600.0) if state.get("last_push") else 0)
+        print("已推送(%s): %s" % (reason_text,
                                   message.replace("\n", " / ")))
         print("服务端返回: " + resp[:300])
     else:
         print("无预警，且不在播报时段（%s）" % now.strftime("%H:%M"))
 
     # 状态更新
+    if should_push:
+        state["last_push"] = now.strftime("%Y-%m-%d %H:%M:%S")
     state["intl_last"] = markets.get("intl", {}).get("price")
     state["cmbc_last"] = markets.get("cmbc", {}).get("price")
     state["last_check"] = now.strftime("%Y-%m-%d %H:%M:%S")
