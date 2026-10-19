@@ -198,13 +198,28 @@ def parse_alerts(raw):
 
 
 def digest_due(now, state, forced):
+    """判断是否需要定时播报；同一天同一个播报点只发一次（含补发）。"""
     if forced:
         return True, "手动触发"
+
+    today = now.strftime("%Y-%m-%d")
+    track = state.get("digest_slots") or {}
+    if track.get("date") != today:
+        track = {"date": today, "slots": []}
+    sent = track.setdefault("slots", [])
+
+    def mark(name):
+        if name not in sent:
+            sent.append(name)
+        state["digest_slots"] = track
+
     if now.weekday() >= 5:
         minutes = now.hour * 60 + now.minute
-        if WEEKEND_WINDOW[0] <= minutes <= WEEKEND_WINDOW[1]:
+        if WEEKEND_WINDOW[0] <= minutes <= WEEKEND_WINDOW[1] and "weekend" not in sent:
+            mark("weekend")
             return True, "周末 09:30 播报"
         return False, ""
+
     last = state.get("last_digest")
     if last:
         try:
@@ -213,20 +228,22 @@ def digest_due(now, state, forced):
                 return False, ""
         except ValueError:
             pass
+
     for slot in DIGEST_SLOTS:
+        if slot in sent:
+            continue
         h, m = map(int, slot.split(":"))
         target = now.replace(hour=h, minute=m, second=0, microsecond=0)
         delta = (now - target).total_seconds()
         if abs(delta) <= DIGEST_WINDOW_MIN * 60:
+            mark(slot)
             return True, "定时播报 %s" % slot
         if 0 < delta <= DIGEST_CATCHUP_MIN * 60:
+            mark(slot)
             return True, "补发 %s 播报" % slot
     return False, ""
 
 
-# --------------------------------------------------------------------------- #
-# 历史记录
-# --------------------------------------------------------------------------- #
 def record_history(state, price, now, commit):
     """把 10 分钟价格点暂存到 state，提交时合并进 docs/history.json。"""
     ts = int(now.timestamp() // HISTORY_POINT_SECONDS * HISTORY_POINT_SECONDS)
