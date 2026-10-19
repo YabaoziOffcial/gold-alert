@@ -21,7 +21,13 @@
       "note": "跌破 4100.00"
     }
   ],
-  "cmbc": [],
+  "cmbc": [
+    {
+      "direction": "above",
+      "price": 900,
+      "note": "涨破 900.00"
+    }
+  ],
   "config": {
     "window_start": "09:00",
     "window_end": "02:00",
