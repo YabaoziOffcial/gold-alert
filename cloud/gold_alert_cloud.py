@@ -375,8 +375,7 @@ def main():
     priority = int(os.environ.get("NTFY_PRIORITY") or 4)
 
     now = datetime.now(TZ_CN)
-    forced = (os.environ.get("FORCE") == "1"
-              or os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch")
+    forced = (os.environ.get("FORCE") == "1")
     is_weekend = now.weekday() >= 5
 
     raw_alerts = load_json(ALERT_FILE, {})
