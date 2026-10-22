@@ -26,6 +26,16 @@
       "direction": "above",
       "price": 900,
       "note": "涨破 900.00"
+    },
+    {
+      "direction": "below",
+      "price": 860,
+      "note": "跌破 860.00"
+    },
+    {
+      "direction": "below",
+      "price": 870,
+      "note": "跌破 870.00"
     }
   ],
   "config": {
