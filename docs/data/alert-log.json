@@ -1,4 +1,12 @@
 {
-  "updated": "2026-10-18 23:43:52",
-  "items": []
+ "updated": "2026-10-22 13:01:16",
+ "items": [
+  {
+   "ts": 1792645276,
+   "market": "intl",
+   "direction": "below",
+   "threshold": 4100.0,
+   "price": 4091.7
+  }
+ ]
 }
