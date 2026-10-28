@@ -9,6 +9,11 @@
       "direction": "below",
       "price": 4000,
       "note": "跌破 4000.00"
+    },
+    {
+      "direction": "below",
+      "price": 3940,
+      "note": "跌破 3940.00"
     }
   ],
   "cmbc": [
