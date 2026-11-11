@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-03 23:09:09",
+ "updated": "2026-11-12 00:43:45",
  "items": [
   {
    "ts": 1792645276,
@@ -91,6 +91,20 @@
    "direction": "below",
    "threshold": 3940.0,
    "price": 3937.45
+  },
+  {
+   "ts": 1794415425,
+   "market": "intl",
+   "direction": "below",
+   "threshold": 4000.0,
+   "price": 3999.59
+  },
+  {
+   "ts": 1794415425,
+   "market": "cmbc",
+   "direction": "below",
+   "threshold": 860.0,
+   "price": 859.4
   }
  ]
 }
